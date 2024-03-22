@@ -1,9 +1,6 @@
 name: Workflow Engine
 description: Code Scan + Image Build + Image Scan + Image Publish + Validation
 inputs:
-  artifact_dir:
-    description: The target directory for all generated artifacts
-    default: artifacts
   build_args:
     description: Comma seperated list of build time variables
   build_dir:
@@ -15,13 +12,6 @@ inputs:
   bundle_publish_tag:
     description: The full image tag for the target gatecheck bundle image blob
     default: my-app/artifact-bundle:latest
-  cache_from:
-    description: External cache sources (e.g., "user/app:cache", "type=local,src=path/to/dir")
-  cache_to:
-    description: Cache export destinations (e.g., "user/app:cache", "type=local,src=path/to/dir")
-  clamav_filename:
-    description: The filename for the clamscan virus report - must contain 'clamav'
-    default: clamav-virus-report.txt
   code_scan_enabled:
     description: Enable/Disable the code scan pipeline
     default: "1"
@@ -31,22 +21,6 @@ inputs:
   dockerfile:
     description: The Dockerfile/Containerfile to use during an image build
     default: Dockerfile
-  gatecheck_bundle_filename:
-    description: The filename for the gatecheck bundle, a validatable archive of security artifacts
-    default: gatecheck-bundle.tar.gz
-  gatecheck_config_filename:
-    description: The filename for the gatecheck config
-  gitleaks_filename:
-    description: The filename for the gitleaks secret report - must contain 'gitleaks'
-    default: gitleaks-secrets-report.json
-  gitleaks_src_dir:
-    description: The target directory for the gitleaks scan
-    default: .
-  grype_config_filename:
-    description: The config filename for the grype vulnerability report
-  grype_filename:
-    description: The filename for the grype vulnerability report - must contain 'grype'
-    default: grype-vulnerability-report-full.json
   image_build_enabled:
     description: Enable/Disable the image build pipeline
     default: "1"
@@ -58,18 +32,9 @@ inputs:
     default: "1"
   platform:
     description: The target platform for build
-  semgrep_filename:
-    description: The filename for the semgrep SAST report - must contain 'semgrep'
-    default: semgrep-sast-report.json
   semgrep_rules:
     description: Semgrep ruleset manual override
     default: p/default
-  squash_layers:
-    description: squash image layers - Only Supported with Podman CLI
-    default: "0"
-  syft_filename:
-    description: The filename for the syft SBOM report - must contain 'syft'
-    default: syft-sbom-report.json
   tag:
     description: The full image tag for the target container image
     default: my-app:latest
@@ -77,33 +42,20 @@ inputs:
     description: The target build stage to build (e.g., [linux/amd64])
 runs:
   using: docker
-  image: docker://ghcr.io/cms-enterprise/batcave/workflow-engine:v0.0.1-rc.12
-  args: [run, all, --verbose, --cli-interface, docker, --semgrep-experimental]
+  image: Dockerfile
+  args: []
   env:
-    WFE_ARTIFACT_DIR: ${{ inputs.artifact_dir }}
     WFE_CODE_SCAN_ENABLED: ${{ inputs.code_scan_enabled }}
-    WFE_CODE_SCAN_GITLEAKS_FILENAME: ${{ inputs.gitleaks_filename }}
-    WFE_CODE_SCAN_GITLEAKS_SRC_DIR: ${{ inputs.gitleaks_src_dir }}
-    WFE_CODE_SCAN_SEMGREP_FILENAME: ${{ inputs.semgrep_filename }}
     WFE_CODE_SCAN_SEMGREP_RULES: ${{ inputs.semgrep_rules }}
     WFE_DEPLOY_ENABLED: ${{ inputs.deploy_enabled }}
-    WFE_DEPLOY_GATECHECK_CONFIG_FILENAME: ${{ inputs.gatecheck_config_filename }}
-    WFE_GATECHECK_BUNDLE_FILENAME: ${{ inputs.gatecheck_bundle_filename }}
     WFE_IMAGE_BUILD_ARGS: ${{ inputs.build_args }}
-    WFE_IMAGE_BUILD_CACHE_FROM: ${{ inputs.cache_from }}
-    WFE_IMAGE_BUILD_CACHE_TO: ${{ inputs.cache_to }}
     WFE_IMAGE_BUILD_DIR: ${{ inputs.build_dir }}
     WFE_IMAGE_BUILD_DOCKERFILE: ${{ inputs.dockerfile }}
     WFE_IMAGE_BUILD_ENABLED: ${{ inputs.image_build_enabled }}
     WFE_IMAGE_BUILD_PLATFORM: ${{ inputs.platform }}
-    WFE_IMAGE_BUILD_SQUASH_LAYERS: ${{ inputs.squash_layers }}
     WFE_IMAGE_BUILD_TARGET: ${{ inputs.target }}
     WFE_IMAGE_BUNDLE_PUBLISH_ENABLED: ${{ inputs.bundle_publish_enabled }}
     WFE_IMAGE_PUBLISH_BUNDLE_TAG: ${{ inputs.bundle_publish_tag }}
     WFE_IMAGE_PUBLISH_ENABLED: ${{ inputs.image_publish_enabled }}
-    WFE_IMAGE_SCAN_CLAMAV_FILENAME: ${{ inputs.clamav_filename }}
     WFE_IMAGE_SCAN_ENABLED: ${{ inputs.image_scan_enabled }}
-    WFE_IMAGE_SCAN_GRYPE_CONFIG_FILENAME: ${{ inputs.grype_config_filename }}
-    WFE_IMAGE_SCAN_GRYPE_FILENAME: ${{ inputs.grype_filename }}
-    WFE_IMAGE_SCAN_SYFT_FILENAME: ${{ inputs.syft_filename }}
     WFE_IMAGE_TAG: ${{ inputs.tag }}
