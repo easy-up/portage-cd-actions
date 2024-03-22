@@ -78,7 +78,7 @@ inputs:
 runs:
   using: docker
   image: docker://ghcr.io/cms-enterprise/batcave/workflow-engine:v0.0.1-rc.12
-  args: [run, all, --verbose, --cli-interface, docker, -semgrep-experimental]
+  args: [run, all, --verbose, --cli-interface, docker, --semgrep-experimental]
   env:
     WFE_ARTIFACT_DIR: ${{ inputs.artifact_dir }}
     WFE_CODE_SCAN_ENABLED: ${{ inputs.code_scan_enabled }}
