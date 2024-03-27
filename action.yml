@@ -18,6 +18,8 @@ inputs:
   deploy_enabled:
     description: Enable/Disable the deploy pipeline
     default: "1"
+  docker_auth_json:
+    description: The Docker config with credentials that will be used for ~/.docker/config.json
   dockerfile:
     description: The Dockerfile/Containerfile to use during an image build
     default: Dockerfile
@@ -45,6 +47,7 @@ runs:
   image: Dockerfile
   args: []
   env:
+    DOCKER_AUTH_JSON: ${{ inputs.docker_auth_json }}
     WFE_CODE_SCAN_ENABLED: ${{ inputs.code_scan_enabled }}
     WFE_CODE_SCAN_SEMGREP_RULES: ${{ inputs.semgrep_rules }}
     WFE_DEPLOY_ENABLED: ${{ inputs.deploy_enabled }}

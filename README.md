@@ -76,22 +76,23 @@ Functionality to the underlying execution of Workflow Engine can be modified usi
 
 ### Inputs
 
-| Name                   | Type   | Default Value                 | Description                                                   |
-| ---------------------- | ------ | ----------------------------- | ------------------------------------------------------------- |
-| tag                    | String | my-app:latest                 | The full image tag for the target container image             |
-| image_build_enabled    | Bool   | 1                             | Enable/Disable the image build pipeline                       |
-| build_dir              | String | .                             | The build directory to using during an image build            |
-| dockerfile             | String | Dockerfile                    | The Dockerfile/Containerfile to use during an image build     |
-| platform               | String |                               | The target platform for build                                 |
-| target                 | String |                               | The target build stage to build (e.g., [linux/amd64])         |
-| build_args             | List   |                               | Comma seperated list of build time variables                  |
-| image_scan_enabled     | Bool   | 1                             | Enable/Disable the image scan pipeline                        |
-| code_scan_enabled      | Bool   | 1                             | Enable/Disable the code scan pipeline                         |
-| semgrep_rules          | String | p/default                     | Semgrep ruleset manual override                               |
-| image_publish_enabled  | Bool   | 1                             | Enable/Disable the image publish pipeline                     |
-| bundle_publish_enabled | Bool   | 1                             | Enable/Disable gatecheck artifact bundle publish task         |
-| bundle_publish_tag     | String | my-app/artifact-bundle:latest | The full image tag for the target gatecheck bundle image blob |
-| deploy_enabled         | Bool   | 1                             | Enable/Disable the deploy pipeline                            |
+| Name                   | Type   | Default Value                 | Description                                                                    |
+| ---------------------- | ------ | ----------------------------- | ------------------------------------------------------------------------------ |
+| tag                    | String | my-app:latest                 | The full image tag for the target container image                              |
+| image_build_enabled    | Bool   | 1                             | Enable/Disable the image build pipeline                                        |
+| build_dir              | String | .                             | The build directory to using during an image build                             |
+| dockerfile             | String | Dockerfile                    | The Dockerfile/Containerfile to use during an image build                      |
+| platform               | String |                               | The target platform for build                                                  |
+| target                 | String |                               | The target build stage to build (e.g., [linux/amd64])                          |
+| build_args             | List   |                               | Comma seperated list of build time variables                                   |
+| image_scan_enabled     | Bool   | 1                             | Enable/Disable the image scan pipeline                                         |
+| code_scan_enabled      | Bool   | 1                             | Enable/Disable the code scan pipeline                                          |
+| semgrep_rules          | String | p/default                     | Semgrep ruleset manual override                                                |
+| image_publish_enabled  | Bool   | 1                             | Enable/Disable the image publish pipeline                                      |
+| bundle_publish_enabled | Bool   | 1                             | Enable/Disable gatecheck artifact bundle publish task                          |
+| bundle_publish_tag     | String | my-app/artifact-bundle:latest | The full image tag for the target gatecheck bundle image blob                  |
+| deploy_enabled         | Bool   | 1                             | Enable/Disable the deploy pipeline                                             |
+| docker_auth_json       | string |                               | The Docker config with credentials that will be used for ~/.docker/config.json |
 
 ### Outputs
 
