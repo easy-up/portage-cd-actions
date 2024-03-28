@@ -1,7 +1,7 @@
 #!/bin/sh -l
 
-time=$(date)
-echo "time=$time" >> $GITHUB_OUTPUT
+# Exit on Non-zero for subsequent commands
+set -e
 
 ls -lah
 pwd
