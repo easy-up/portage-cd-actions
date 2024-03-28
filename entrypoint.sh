@@ -11,6 +11,6 @@ if [ -z "$DOCKER_AUTH_JSON" ]; then
   echo $DOCKER_AUTH_JSON | jq . > ~/.docker/config.json
 fi
 
-git config --global --add safe.directory /github/workspace
+git config --global --add safe.directory $GITHUB_WORKSPACE
 
 workflow-engine run all --verbose --semgrep-experimental
