@@ -7,6 +7,7 @@ ls -lah
 pwd
 
 if [ -z "$DOCKER_AUTH_JSON" ]; then
+  echo "Docker Auth JSON detected, creating config.json"
   mkdir -p ~/.docker
   echo $DOCKER_AUTH_JSON | jq . > ~/.docker/config.json
 fi
