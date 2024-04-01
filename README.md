@@ -66,9 +66,9 @@ tags.
 
 **vMAJOR-stable**: Will automatically pull in PATCH and MINOR releases.
 
-**vMAJOR-alpha**: Does not _officially_ come with stability guarantees for pre-stable-released features
+**vMAJOR-beta**: Does not _officially_ come with stability guarantees for pre-stable-released features
 
-**vMAJOR-beta**: Does not come with any stability guarantees
+**vMAJOR-alpha**: Does not come with any stability guarantees
 
 ## Customizing
 
