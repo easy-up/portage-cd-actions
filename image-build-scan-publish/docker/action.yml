@@ -1,0 +1,67 @@
+name: Workflow Engine
+description: Code Scan + Image Build + Image Scan + Image Publish + Validation
+inputs:
+  build_args:
+    description: Comma seperated list of build time variables
+  build_dir:
+    description: The build directory to using during an image build
+    default: .
+  bundle_publish_enabled:
+    description: Enable/Disable gatecheck artifact bundle publish task
+    default: "1"
+  bundle_publish_tag:
+    description: The full image tag for the target gatecheck bundle image blob
+    default: my-app/artifact-bundle:latest
+  code_scan_enabled:
+    description: Enable/Disable the code scan pipeline
+    default: "1"
+  config_file:
+    description: The path to a config file to use when executing workflow-engine
+  deploy_enabled:
+    description: Enable/Disable the deploy pipeline
+    default: "1"
+  docker_auth_json:
+    description: The Docker config with credentials that will be used for ~/.docker/config.json
+  dockerfile:
+    description: The Dockerfile/Containerfile to use during an image build
+    default: Dockerfile
+  image_build_enabled:
+    description: Enable/Disable the image build pipeline
+    default: "1"
+  image_publish_enabled:
+    description: Enable/Disable the image publish pipeline
+    default: "1"
+  image_scan_enabled:
+    description: Enable/Disable the image scan pipeline
+    default: "1"
+  platform:
+    description: The target platform for build
+  semgrep_rules:
+    description: Semgrep ruleset manual override
+    default: p/default
+  tag:
+    description: The full image tag for the target container image
+    default: my-app:latest
+  target:
+    description: The target build stage to build (e.g., [linux/amd64])
+runs:
+  using: docker
+  image: docker://ghcr.io/cms-enterprise/batcave/workflow-engine-action:v0.0.1-rc.1
+  args: []
+  env:
+    DOCKER_AUTH_JSON: ${{ inputs.docker_auth_json }}
+    WFE_CODE_SCAN_ENABLED: ${{ inputs.code_scan_enabled }}
+    WFE_CODE_SCAN_SEMGREP_RULES: ${{ inputs.semgrep_rules }}
+    WFE_CONFIG: ${{ inputs.config_file }}
+    WFE_DEPLOY_ENABLED: ${{ inputs.deploy_enabled }}
+    WFE_IMAGE_BUILD_ARGS: ${{ inputs.build_args }}
+    WFE_IMAGE_BUILD_DIR: ${{ inputs.build_dir }}
+    WFE_IMAGE_BUILD_DOCKERFILE: ${{ inputs.dockerfile }}
+    WFE_IMAGE_BUILD_ENABLED: ${{ inputs.image_build_enabled }}
+    WFE_IMAGE_BUILD_PLATFORM: ${{ inputs.platform }}
+    WFE_IMAGE_BUILD_TARGET: ${{ inputs.target }}
+    WFE_IMAGE_BUNDLE_PUBLISH_ENABLED: ${{ inputs.bundle_publish_enabled }}
+    WFE_IMAGE_PUBLISH_BUNDLE_TAG: ${{ inputs.bundle_publish_tag }}
+    WFE_IMAGE_PUBLISH_ENABLED: ${{ inputs.image_publish_enabled }}
+    WFE_IMAGE_SCAN_ENABLED: ${{ inputs.image_scan_enabled }}
+    WFE_IMAGE_TAG: ${{ inputs.tag }}

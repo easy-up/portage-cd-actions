@@ -1,10 +1,7 @@
-#!/bin/sh -l
+#! /bin/sh
 
 # Exit on Non-zero for subsequent commands
 set -e
-
-ls -lah
-pwd
 
 if [ -z "$DOCKER_AUTH_JSON" ]; then
   shout log "Skip docker config.json creation, DOCKER_AUTH_JSON not set"

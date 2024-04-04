@@ -1,4 +1,6 @@
-FROM ghcr.io/cms-enterprise/batcave/workflow-engine:v0.0.1-rc.15
+ARG VERSION
+
+FROM ghcr.io/cms-enterprise/batcave/workflow-engine:${VERSION}
 
 COPY entrypoint.sh /entrypoint.sh
 
