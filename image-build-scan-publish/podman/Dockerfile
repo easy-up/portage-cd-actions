@@ -1,6 +1,6 @@
 ARG VERSION
 
-FROM ghcr.io/cms-enterprise/batcave/workflow-engine:${VERSION}
+FROM ghcr.io/cms-enterprise/batcave/workflow-engine:podman-${VERSION}
 
 COPY entrypoint.sh /entrypoint.sh
 
