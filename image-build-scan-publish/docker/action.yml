@@ -46,7 +46,7 @@ inputs:
     description: The target build stage to build (e.g., [linux/amd64])
 runs:
   using: docker
-  image: docker://ghcr.io/cms-enterprise/batcave/workflow-engine-action:v0.0.1-rc.1
+  image: docker://ghcr.io/cms-enterprise/batcave/workflow-engine-action:v0.0.1-rc.2
   args: []
   env:
     DOCKER_AUTH_JSON: ${{ inputs.docker_auth_json }}
