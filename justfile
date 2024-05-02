@@ -1,4 +1,4 @@
-version := "v0.0.1-rc.3"
+version := "v0.0.1-rc.4"
 
 generate_docker_action:
   workflow-engine config generate-action --image docker://ghcr.io/cms-enterprise/batcave/workflow-engine-action:{{version}} \

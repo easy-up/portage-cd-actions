@@ -52,7 +52,7 @@ inputs:
     description: The target build stage to build (e.g., [linux/amd64])
 runs:
   using: docker
-  image: docker://ghcr.io/cms-enterprise/batcave/workflow-engine-action:v0.0.1-rc.3
+  image: docker://ghcr.io/cms-enterprise/batcave/workflow-engine-action:v0.0.1-rc.4
   args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
