@@ -71,3 +71,7 @@ runs:
     WFE_IMAGE_PUBLISH_ENABLED: ${{ inputs.image_publish_enabled }}
     WFE_IMAGE_SCAN_ENABLED: ${{ inputs.image_scan_enabled }}
     WFE_IMAGE_TAG: ${{ inputs.tag }}
+    # Gatecheck's default behavior of using the current date is not reliable because depending on
+    # the exact time of day the new file may not be available yet
+    GATECHECK_EPSS_URL: https://epss.cyentia.com/
+
