@@ -18,10 +18,12 @@ inputs:
   config_file:
     description: The path to a config file to use when executing workflow-engine
   container_registry:
-    description: The container registry to login to
+    description: The container registry to login to (used if no DOCKER_AUTH_JSON is provided)
   deploy_enabled:
     description: Enable/Disable the deploy pipeline
     default: "1"
+  docker_auth_json:
+    description: The Docker config with credentials that will be used for ~/.docker/config.json (takes precedence over explicit registry credentials)
   dockerfile:
     description: The Dockerfile/Containerfile to use during an image build
     default: Dockerfile
@@ -37,9 +39,9 @@ inputs:
   platform:
     description: The target platform for build
   registry_token:
-    description: The token or password for the container registry
+    description: The token or password for the container registry (used if no DOCKER_AUTH_JSON is provided)
   registry_user:
-    description: The username for the container registry
+    description: The username for the container registry (used if no DOCKER_AUTH_JSON is provided)
   semgrep_rules:
     description: Semgrep ruleset manual override
     default: p/default
@@ -54,6 +56,7 @@ runs:
   args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
+    DOCKER_AUTH_JSON: ${{ inputs.docker_auth_json }}
     REGISTRY_TOKEN: ${{ inputs.registry_token }}
     REGISTRY_USER: ${{ inputs.registry_user }}
     WFE_CODE_SCAN_ENABLED: ${{ inputs.code_scan_enabled }}
