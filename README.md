@@ -27,7 +27,7 @@ jobs:
           echo full_image_tag="ttl.sh/$(cat /proc/sys/kernel/random/uuid):30m" >> $GITHUB_OUTPUT
           echo full_bundle_tag="ttl.sh/$(cat /proc/sys/kernel/random/uuid):30m" >> $GITHUB_OUTPUT
       - name: Run Portage CD
-        uses: easy-up/portage-cd-action@v1-stable
+        uses: easy-up/portage-cd-actions@v1-stable
         with:
           build_dir: "."
           dockerfile: "Dockerfile"
