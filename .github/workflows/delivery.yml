@@ -1,5 +1,9 @@
 name: Build portage images for use it GitHub actions.
 run-name: "Build Portage CD Action Images"
+permissions:
+  contents: read
+  packages: write
+  checks: write
 on:
   workflow_dispatch:
   push:
