@@ -1,5 +1,5 @@
-name: Build workflow-engine images for use it GitHub actions.
-run-name: "Build Workflow Engine Action Images"
+name: Build portage images for use it GitHub actions.
+run-name: "Build Portage CD Action Images"
 on:
   workflow_dispatch:
   push:
@@ -28,7 +28,7 @@ jobs:
       - name: Set outputs
         id: vars
         run: |
-          image_repo=ghcr.io/cms-enterprise/batcave/workflow-engine-action
+          image_repo=ghcr.io/easy-up/portage-action
           image_tag=${GITHUB_SHA::8}
           # If on a git tag like vx.x.x, change the image tag to reflect
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
@@ -38,7 +38,7 @@ jobs:
           echo "image_name=$image_repo:$image_tag" >> $GITHUB_OUTPUT 
           echo "podman_image_name=$image_repo:podman-$image_tag" >> $GITHUB_OUTPUT 
           # Build Variables
-          echo "version=$(cat WORKFLOW_ENGINE_VERSION)" >> $GITHUB_OUTPUT
+          echo "version=$(cat PORTAGE_VERSION)" >> $GITHUB_OUTPUT
 
       - name: Build and push
         uses: docker/build-push-action@v5
@@ -62,5 +62,3 @@ jobs:
           echo "## Docker Action Image Build and Push Summary" >> $GITHUB_STEP_SUMMARY
           echo ":white_check_mark: Image (Docker CLI): ${{ steps.vars.outputs.image_name }}" >> $GITHUB_STEP_SUMMARY
           echo ":white_check_mark: Image (Podman CLI): ${{ steps.vars.outputs.podman_image_name }}" >> $GITHUB_STEP_SUMMARY
-
-          

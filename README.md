@@ -1,6 +1,6 @@
-# Workflow Engine - Security Pipeline Action
+# Portage CD - Security Pipeline Action
 
-Workflow Engine is an opinionated security pipeline designed to continuously deliver secure images to a registry
+Portage CD is an opinionated security pipeline designed to continuously deliver secure images to a registry
 
 ---
 
@@ -13,22 +13,21 @@ Workflow Engine is an opinionated security pipeline designed to continuously del
 
 ## Usage
 
-This is an example configuration to dynamically generate an image tag before running workflow engine
+This is an example configuration to dynamically generate an image tag before running `portage`
 
 ```yaml
 jobs:
-  workflow_engine:
+  potrage:
     runs-on: ubuntu-latest
-    name: Workflow Engine Code Scan + Image Delivery + Deployment Validation
+    name: Portage Code Scan + Image Delivery + Deployment Validation
     steps:
       - uses: actions/checkout@v4
       - id: vars
         run: |
           echo full_image_tag="ttl.sh/$(cat /proc/sys/kernel/random/uuid):30m" >> $GITHUB_OUTPUT
           echo full_bundle_tag="ttl.sh/$(cat /proc/sys/kernel/random/uuid):30m" >> $GITHUB_OUTPUT
-      - name: Run Workflow Engine
-        uses: cms-enterprise/batcave-workflow-engine-action@v1-stable
-        # uses: ./.github/actions/workflow-engine
+      - name: Run Portage CD
+        uses: easy-up/portage-cd-action@v1-stable
         with:
           build_dir: "."
           dockerfile: "Dockerfile"
@@ -38,27 +37,32 @@ jobs:
 
 ## Versioning
 
-Workflow Engine Action loosely conforms to Semantic Versioning guidelines and format.
+Portage CD Action loosely conforms to Semantic Versioning guidelines and format.
 
 Git Tags will use the format `vMAJOR.MINOR.PATCH` or `vMAJOR.MINOR.PATCH-rc.X`
 
 MAJOR: A change has been made to any action input / output that is NOT backwards compatible with previous versions
 
-MINOR: A major or minor change has been made to Workflow Engine itself that may add or deprecate an action
+MINOR: A major or minor change has been made to Portage CD itself that may add or deprecate an action
 input / output
 
-PATCH: A minor or patch change has been made to Workflow Engine or the entrypoint script that does not impact an action
+PATCH: A minor or patch change has been made to Portage CD or the entrypoint script that does not impact an action
 input or output, but may introduce minor functionality changes for optimization or bug fixes
 
 Release Candidate (rc): Indicates a pre-release version intended for "testing in the wild" with no stability guarantees
+
+### Differences with Portage CD Versions
+
+Because Portage CD Actions may undergo multiple revisions or version changes while the version of the Portage CD tool
+remains the same, the version of the Portage CD Action is non necessarily related to the version of Portage CD.
 
 ### Stability Guarantees 
 
 While maintaining stability in a security pipeline is important, it's also important that tools are updated to inherit
 any relevant upgrades to the underlying tools.
-Workflow Engine depends on external tools with their own release cycles and definitions for what is considered a
+Portage CD depends on external tools with their own release cycles and definitions for what is considered a
 'breaking change'.
-For Workflow Engine and the Workflow Engine Action, breaking changes will be determined by the Maintainers of the
+For Portage CD and the Portage CD Action, breaking changes will be determined by the Maintainers of the
 respective projects.
 
 The mechanism by which we will provide some degree of stability is by using branches that will be fixed to certain
@@ -72,7 +76,7 @@ tags.
 
 ## Customizing
 
-Functionality to the underlying execution of Workflow Engine can be modified using GitHub Action inputs.
+Functionality to the underlying execution of Portage CD can be modified using GitHub Action inputs.
 
 ### Inputs
 

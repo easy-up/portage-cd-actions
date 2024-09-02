@@ -22,11 +22,11 @@ else
   shout log "Skipping docker config.json creation, neither DOCKER_AUTH_JSON or CONTAINER_REGISTRY/REGISTRY_USER/REGISTRY_TOKEN are set"
 fi
 
-if ([ "$WFE_IMAGE_BUILD_ENABLED" = "0" ] || [ "$WFE_IMAGE_BUILD_ENABLED" = "false" ]); then
-  if ([ "$WFE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$WFE_IMAGE_SCAN_ENABLED" = "true" ]); then
+if ([ "$PORTAGE_IMAGE_BUILD_ENABLED" = "0" ] || [ "$PORTAGE_IMAGE_BUILD_ENABLED" = "false" ]); then
+  if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
     shout log "Pull Image Scan target tag. Image Build not enabled, Image Scan enabled."
-    su podman -s /bin/sh -c "docker pull \"$WFE_IMAGE_TAG\""
+    su podman -s /bin/sh -c "docker pull \"$PORTAGE_IMAGE_TAG\""
   fi
 fi
 
-su podman -s /bin/sh -c "workflow-engine run all --verbose --semgrep-experimental --cli-interface podman"
+su podman -s /bin/sh -c "portage run all --verbose --semgrep-experimental --cli-interface podman"

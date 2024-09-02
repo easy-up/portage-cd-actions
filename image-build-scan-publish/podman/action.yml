@@ -1,4 +1,4 @@
-name: Workflow Engine
+name: Portage CD
 description: Code Scan + Image Build + Image Scan + Image Publish + Validation
 inputs:
   build_args:
@@ -16,7 +16,7 @@ inputs:
     description: Enable/Disable the code scan pipeline
     default: "1"
   config_file:
-    description: The path to a config file to use when executing workflow-engine
+    description: The path to a config file to use when executing portage
   container_registry:
     description: The container registry to login to (used if no DOCKER_AUTH_JSON is provided)
   deploy_enabled:
@@ -52,29 +52,28 @@ inputs:
     description: The target build stage to build (e.g., [linux/amd64])
 runs:
   using: docker
-  image: docker://ghcr.io/cms-enterprise/batcave/workflow-engine-action:podman-v0.0.1-rc.4
+  image: docker://ghcr.io/easy-up/portage-action:podman-v0.0.1-rc.5
   args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
     DOCKER_AUTH_JSON: ${{ inputs.docker_auth_json }}
+    PORTAGE_CODE_SCAN_ENABLED: ${{ inputs.code_scan_enabled }}
+    PORTAGE_CODE_SCAN_SEMGREP_RULES: ${{ inputs.semgrep_rules }}
+    PORTAGE_CONFIG: ${{ inputs.config_file }}
+    PORTAGE_DEPLOY_ENABLED: ${{ inputs.deploy_enabled }}
+    PORTAGE_IMAGE_BUILD_ARGS: ${{ inputs.build_args }}
+    PORTAGE_IMAGE_BUILD_DIR: ${{ inputs.build_dir }}
+    PORTAGE_IMAGE_BUILD_DOCKERFILE: ${{ inputs.dockerfile }}
+    PORTAGE_IMAGE_BUILD_ENABLED: ${{ inputs.image_build_enabled }}
+    PORTAGE_IMAGE_BUILD_PLATFORM: ${{ inputs.platform }}
+    PORTAGE_IMAGE_BUILD_TARGET: ${{ inputs.target }}
+    PORTAGE_IMAGE_BUNDLE_PUBLISH_ENABLED: ${{ inputs.bundle_publish_enabled }}
+    PORTAGE_IMAGE_PUBLISH_BUNDLE_TAG: ${{ inputs.bundle_publish_tag }}
+    PORTAGE_IMAGE_PUBLISH_ENABLED: ${{ inputs.image_publish_enabled }}
+    PORTAGE_IMAGE_SCAN_ENABLED: ${{ inputs.image_scan_enabled }}
+    PORTAGE_IMAGE_TAG: ${{ inputs.tag }}
     REGISTRY_TOKEN: ${{ inputs.registry_token }}
     REGISTRY_USER: ${{ inputs.registry_user }}
-    WFE_CODE_SCAN_ENABLED: ${{ inputs.code_scan_enabled }}
-    WFE_CODE_SCAN_SEMGREP_RULES: ${{ inputs.semgrep_rules }}
-    WFE_CONFIG: ${{ inputs.config_file }}
-    WFE_DEPLOY_ENABLED: ${{ inputs.deploy_enabled }}
-    WFE_IMAGE_BUILD_ARGS: ${{ inputs.build_args }}
-    WFE_IMAGE_BUILD_DIR: ${{ inputs.build_dir }}
-    WFE_IMAGE_BUILD_DOCKERFILE: ${{ inputs.dockerfile }}
-    WFE_IMAGE_BUILD_ENABLED: ${{ inputs.image_build_enabled }}
-    WFE_IMAGE_BUILD_PLATFORM: ${{ inputs.platform }}
-    WFE_IMAGE_BUILD_TARGET: ${{ inputs.target }}
-    WFE_IMAGE_BUNDLE_PUBLISH_ENABLED: ${{ inputs.bundle_publish_enabled }}
-    WFE_IMAGE_PUBLISH_BUNDLE_TAG: ${{ inputs.bundle_publish_tag }}
-    WFE_IMAGE_PUBLISH_ENABLED: ${{ inputs.image_publish_enabled }}
-    WFE_IMAGE_SCAN_ENABLED: ${{ inputs.image_scan_enabled }}
-    WFE_IMAGE_TAG: ${{ inputs.tag }}
     # Gatecheck's default behavior of using the current date is not reliable because depending on
     # the exact time of day the new file may not be available yet
     GATECHECK_EPSS_URL: https://epss.cyentia.com/
-
