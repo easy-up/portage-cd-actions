@@ -1,8 +1,10 @@
-ARG VERSION
+ARG VERSION=latest
 
-FROM golang:alpine3.20 as build-prerequisites
+FROM golang:alpine3.20 AS build-prerequisites
 
 ARG SHOUT_VERSION=v0.1.1
+
+RUN apk --no-cache add ca-certificates git
 
 RUN git clone --branch ${SHOUT_VERSION} --depth=1 --single-branch https://github.com/bacchusjackson/shout /app/shout
 
