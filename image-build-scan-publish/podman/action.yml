@@ -52,7 +52,7 @@ inputs:
     description: The target build stage to build (e.g., [linux/amd64])
 runs:
   using: docker
-  image: docker://ghcr.io/easy-up/portage-action:podman-v0.0.1-rc.7
+  image: docker://ghcr.io/easy-up/portage-action:podman-v0.0.1-rc.8
   args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
@@ -74,6 +74,3 @@ runs:
     PORTAGE_IMAGE_TAG: ${{ inputs.tag }}
     REGISTRY_TOKEN: ${{ inputs.registry_token }}
     REGISTRY_USER: ${{ inputs.registry_user }}
-    # Gatecheck's default behavior of using the current date is not reliable because depending on
-    # the exact time of day the new file may not be available yet
-    GATECHECK_EPSS_URL: https://epss.cyentia.com/
