@@ -93,8 +93,7 @@ Functionality to the underlying execution of Portage CD can be modified using Gi
 | code_scan_enabled      | Bool   | 1                             | Enable/Disable the code scan pipeline                                          |
 | semgrep_rules          | String | p/default                     | Semgrep ruleset manual override                                                |
 | image_publish_enabled  | Bool   | 1                             | Enable/Disable the image publish pipeline                                      |
-| bundle_publish_enabled | Bool   | 1                             | Enable/Disable gatecheck artifact bundle publish task                          |
-| bundle_publish_tag     | String | my-app/artifact-bundle:latest | The full image tag for the target gatecheck bundle image blob                  |
+| bundle_publish_tag     | String |                               | The full image tag for the target gatecheck bundle image blob                  |
 | deploy_enabled         | Bool   | 1                             | Enable/Disable the deploy pipeline                                             |
 | docker_auth_json       | string |                               | The Docker config with credentials that will be used for ~/.docker/config.json |
 

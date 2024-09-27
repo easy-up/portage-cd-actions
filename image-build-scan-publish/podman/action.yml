@@ -6,12 +6,8 @@ inputs:
   build_dir:
     description: The build directory to using during an image build
     default: .
-  bundle_publish_enabled:
-    description: Enable/Disable gatecheck artifact bundle publish task
-    default: "1"
   bundle_publish_tag:
     description: The full image tag for the target gatecheck bundle image blob
-    default: my-app/artifact-bundle:latest
   code_scan_enabled:
     description: Enable/Disable the code scan pipeline
     default: "1"
@@ -52,7 +48,7 @@ inputs:
     description: The target build stage to build (e.g., [linux/amd64])
 runs:
   using: docker
-  image: docker://ghcr.io/easy-up/portage-action:podman-v0.0.1-rc.8
+  image: docker://ghcr.io/easy-up/portage-action:podman-v0.0.1-rc.9
   args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
@@ -67,7 +63,6 @@ runs:
     PORTAGE_IMAGE_BUILD_ENABLED: ${{ inputs.image_build_enabled }}
     PORTAGE_IMAGE_BUILD_PLATFORM: ${{ inputs.platform }}
     PORTAGE_IMAGE_BUILD_TARGET: ${{ inputs.target }}
-    PORTAGE_IMAGE_BUNDLE_PUBLISH_ENABLED: ${{ inputs.bundle_publish_enabled }}
     PORTAGE_IMAGE_PUBLISH_BUNDLE_TAG: ${{ inputs.bundle_publish_tag }}
     PORTAGE_IMAGE_PUBLISH_ENABLED: ${{ inputs.image_publish_enabled }}
     PORTAGE_IMAGE_SCAN_ENABLED: ${{ inputs.image_scan_enabled }}
