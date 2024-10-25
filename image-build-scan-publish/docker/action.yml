@@ -15,6 +15,8 @@ inputs:
     description: The path to a config file to use when executing portage
   container_registry:
     description: The container registry to login to (used if no DOCKER_AUTH_JSON is provided)
+  coverage_file:
+    description: An externally generated code coverage file to validate
   deploy_enabled:
     description: Enable/Disable the deploy pipeline
     default: "1"
@@ -23,6 +25,8 @@ inputs:
   dockerfile:
     description: The Dockerfile/Containerfile to use during an image build
     default: Dockerfile
+  gatecheck_config_filename:
+    description: The filename for the gatecheck config
   image_build_enabled:
     description: Enable/Disable the image build pipeline
     default: "1"
@@ -41,6 +45,9 @@ inputs:
   semgrep_rules:
     description: Semgrep ruleset manual override
     default: p/default
+  semgrep_src_dir:
+    description: The target directory for the semgrep scan
+    default: .
   tag:
     description: The full image tag for the target container image
     default: my-app:latest
@@ -48,15 +55,18 @@ inputs:
     description: The target build stage to build (e.g., [linux/amd64])
 runs:
   using: docker
-  image: docker://ghcr.io/easy-up/portage-action:v0.0.1-rc.9
+  image: docker://ghcr.io/easy-up/portage-action:v0.0.2
   args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
     DOCKER_AUTH_JSON: ${{ inputs.docker_auth_json }}
+    PORTAGE_CODE_SCAN_COVERAGE_FILE: ${{ inputs.coverage_file }}
     PORTAGE_CODE_SCAN_ENABLED: ${{ inputs.code_scan_enabled }}
     PORTAGE_CODE_SCAN_SEMGREP_RULES: ${{ inputs.semgrep_rules }}
+    PORTAGE_CODE_SCAN_SEMGREP_SRC_DIR: ${{ inputs.semgrep_src_dir }}
     PORTAGE_CONFIG: ${{ inputs.config_file }}
     PORTAGE_DEPLOY_ENABLED: ${{ inputs.deploy_enabled }}
+    PORTAGE_DEPLOY_GATECHECK_CONFIG_FILENAME: ${{ inputs.gatecheck_config_filename }}
     PORTAGE_IMAGE_BUILD_ARGS: ${{ inputs.build_args }}
     PORTAGE_IMAGE_BUILD_DIR: ${{ inputs.build_dir }}
     PORTAGE_IMAGE_BUILD_DOCKERFILE: ${{ inputs.dockerfile }}
