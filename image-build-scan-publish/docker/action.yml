@@ -48,6 +48,7 @@ runs:
   image: docker://ghcr.io/easy-up/portage-action:debug-docker-save
   args: []
   env:
+    DOCKER_BUILDKIT: "1"
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
     DOCKER_AUTH_JSON: ${{ inputs.docker_auth_json }}
     PORTAGE_CODE_SCAN_COVERAGE_FILE: ${{ inputs.coverage_file }}
