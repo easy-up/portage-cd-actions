@@ -35,8 +35,11 @@ jobs:
           image_repo=ghcr.io/easy-up/portage-action
           image_tag=${GITHUB_SHA::8}
           # If on a git tag like vx.x.x, change the image tag to reflect
+          echo "GITHUB_REF: $GITHUB_REF"
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
             image_tag=${GITHUB_REF/refs\/tags\//}
+          elif [[ $GITHUB_REF == refs/heads/debug* ]]; then
+            image_tag=${GITHUB_REF/refs\/heads\//}
           fi
           # Image Names
           echo "image_name=$image_repo:$image_tag" >> $GITHUB_OUTPUT 

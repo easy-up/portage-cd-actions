@@ -9,6 +9,7 @@ inputs:
     description: The full image tag for the target gatecheck bundle image blob
   code_scan_enabled:
     description: Enable/Disable the code scan pipeline
+    default: "true"
   config_file:
     description: The path to a config file to use when executing portage
   container_registry:
@@ -25,10 +26,16 @@ inputs:
     description: The filename for the gatecheck config
   image_build_enabled:
     description: Enable/Disable the image build pipeline
+    default: "true"
+  image_build_cache_from:
+    description: A location to pull cached layers from
+  image_build_cache_to:
+    description: A location to push cached layers to
   image_publish_enabled:
     description: Enable/Disable the image publish pipeline
   image_scan_enabled:
     description: Enable/Disable the image scan pipeline
+    default: "true"
   platform:
     description: The target platform for build
   registry_token:
@@ -45,7 +52,7 @@ inputs:
     description: The target build stage to build (e.g., [linux/amd64])
 runs:
   using: docker
-  image: docker://ghcr.io/easy-up/portage-action:v0.0.2
+  image: docker://ghcr.io/easy-up/portage-action:v0.0.4
   args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
@@ -61,6 +68,8 @@ runs:
     PORTAGE_IMAGE_BUILD_DIR: ${{ inputs.build_dir }}
     PORTAGE_IMAGE_BUILD_DOCKERFILE: ${{ inputs.dockerfile }}
     PORTAGE_IMAGE_BUILD_ENABLED: ${{ inputs.image_build_enabled }}
+    PORTAGE_IMAGE_BUILD_CACHE_FROM: ${{ inputs.image_build_cache_from }}
+    PORTAGE_IMAGE_BUILD_CACHE_TO: ${{ inputs.image_build_cache_to }}
     PORTAGE_IMAGE_BUILD_PLATFORM: ${{ inputs.platform }}
     PORTAGE_IMAGE_BUILD_TARGET: ${{ inputs.target }}
     PORTAGE_IMAGE_PUBLISH_BUNDLE_TAG: ${{ inputs.bundle_publish_tag }}
