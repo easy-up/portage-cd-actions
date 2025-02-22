@@ -23,4 +23,9 @@ fi
 
 git config --global --add safe.directory $GITHUB_WORKSPACE
 
+echo "Is deployment enabled? $PORTAGE_DEPLOY_ENABLED"
+echo "========== PORTAGE CONFIG =========="
+cat "${PORTAGE_CONFIG:-.portage.yml}" || echo "no config"
+echo "======== END PORTAGE CONFIG ========"
+
 portage run all --verbose --semgrep-experimental
