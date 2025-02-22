@@ -48,7 +48,7 @@ inputs:
     description: The target build stage to build (e.g., [linux/amd64])
 runs:
   using: docker
-  image: docker://ghcr.io/easy-up/portage-action:podman-v0.0.4
+  image: docker://ghcr.io/easy-up/portage-action:podman-v0.0.5
   args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
