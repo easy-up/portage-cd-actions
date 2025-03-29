@@ -29,11 +29,14 @@ if ([ "$PORTAGE_IMAGE_BUILD_ENABLED" = "0" ] || [ "$PORTAGE_IMAGE_BUILD_ENABLED"
   fi
 fi
 
+# Ensure we're in the workspace directory
+cd "$GITHUB_WORKSPACE"
+
 # Create artifacts directory with proper permissions for podman user
-shout log "Creating artifacts directory"
-mkdir -p artifacts
-chgrp podman artifacts
-chmod 775 artifacts
+shout log "Creating artifacts directory in workspace"
+mkdir -p "$GITHUB_WORKSPACE/artifacts"
+chgrp podman "$GITHUB_WORKSPACE/artifacts"
+chmod -R 775 "$GITHUB_WORKSPACE/artifacts"
 
 # Execute portage with arguments passed to the container
 su podman -s /bin/sh -c "portage $*"
