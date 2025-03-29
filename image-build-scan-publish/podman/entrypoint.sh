@@ -29,5 +29,12 @@ if ([ "$PORTAGE_IMAGE_BUILD_ENABLED" = "0" ] || [ "$PORTAGE_IMAGE_BUILD_ENABLED"
   fi
 fi
 
-# Use PORTAGE_COMMAND if set, otherwise default to "run"
-su podman -s /bin/sh -c "portage ${PORTAGE_COMMAND:-"run"} --verbose --semgrep-experimental --cli-interface podman"
+# Use INPUT_PORTAGE_COMMAND if set, otherwise default to "run"
+CMD=${INPUT_PORTAGE_COMMAND:-"run"}
+
+# If the command is just "run", we need to add "all"
+if [ "$CMD" = "run" ]; then
+  CMD="run all"
+fi
+
+su podman -s /bin/sh -c "portage $CMD --verbose --semgrep-experimental --cli-interface podman"
