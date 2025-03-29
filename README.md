@@ -33,7 +33,7 @@ jobs:
           dockerfile: "Dockerfile"
           tag: ${{ steps.vars.outputs.full_image_tag }}
           bundle_publish_tag: ${{ steps.vars.outputs.full_bundle_tag }}
-          portage_command: 'run all -v'
+          portage_command: "run all"
 ```
 ## Versioning
 

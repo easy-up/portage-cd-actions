@@ -53,8 +53,7 @@ inputs:
 runs:
   using: docker
   image: docker://ghcr.io/easy-up/portage:podman-03b7d45d
-  args:
-    - ${{ inputs.portage_command }}
+  args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
     DOCKER_AUTH_JSON: ${{ inputs.docker_auth_json }}
@@ -75,5 +74,6 @@ runs:
     PORTAGE_IMAGE_PUBLISH_ENABLED: ${{ inputs.image_publish_enabled }}
     PORTAGE_IMAGE_SCAN_ENABLED: ${{ inputs.image_scan_enabled }}
     PORTAGE_IMAGE_TAG: ${{ inputs.tag }}
+    PORTAGE_COMMAND: ${{ inputs.portage_command }}
     REGISTRY_TOKEN: ${{ inputs.registry_token }}
     REGISTRY_USER: ${{ inputs.registry_user }}

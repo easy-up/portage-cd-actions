@@ -23,4 +23,5 @@ fi
 
 git config --global --add safe.directory $GITHUB_WORKSPACE
 
-portage run all --verbose --semgrep-experimental
+# Use PORTAGE_COMMAND if set, otherwise default to "run"
+portage ${PORTAGE_COMMAND:-"run"} --verbose --semgrep-experimental

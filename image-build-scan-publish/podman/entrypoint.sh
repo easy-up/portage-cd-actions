@@ -29,4 +29,5 @@ if ([ "$PORTAGE_IMAGE_BUILD_ENABLED" = "0" ] || [ "$PORTAGE_IMAGE_BUILD_ENABLED"
   fi
 fi
 
-su podman -s /bin/sh -c "portage run all --verbose --semgrep-experimental --cli-interface podman"
+# Use PORTAGE_COMMAND if set, otherwise default to "run"
+su podman -s /bin/sh -c "portage ${PORTAGE_COMMAND:-"run"} --verbose --semgrep-experimental --cli-interface podman"
