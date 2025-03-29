@@ -32,6 +32,11 @@ fi
 # Ensure we're in the workspace directory
 cd "$GITHUB_WORKSPACE"
 
+# Ensure workspace has proper permissions
+shout log "Setting workspace permissions"
+chmod -R 775 "$GITHUB_WORKSPACE"
+chgrp -R podman "$GITHUB_WORKSPACE"
+
 # Create artifacts directory with proper permissions for podman user
 shout log "Creating artifacts directory in workspace"
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
