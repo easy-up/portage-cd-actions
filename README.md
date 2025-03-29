@@ -17,15 +17,28 @@ This is an example configuration to dynamically generate an image tag before run
 
 ```yaml
 jobs:
-  potrage:
+  portage:
     runs-on: ubuntu-latest
     name: Portage Code Scan + Image Delivery + Deployment Validation
+    # Set required permissions for the job
+    permissions:
+      contents: write  # Required for creating directories and files
+      packages: write  # Required for publishing packages
+      
     steps:
       - uses: actions/checkout@v4
+        
+      # Set up workspace and artifacts directory
+      - name: Create artifacts directory
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/artifacts
+          chmod -R 755 $GITHUB_WORKSPACE/artifacts
+          
       - id: vars
         run: |
           echo full_image_tag="ttl.sh/$(cat /proc/sys/kernel/random/uuid):30m" >> $GITHUB_OUTPUT
           echo full_bundle_tag="ttl.sh/$(cat /proc/sys/kernel/random/uuid):30m" >> $GITHUB_OUTPUT
+          
       - name: Run Portage CD
         uses: easy-up/portage-cd-actions/image-build-scan-publish/docker@belay_main
         with:

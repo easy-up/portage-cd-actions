@@ -26,9 +26,16 @@ git config --global --add safe.directory $GITHUB_WORKSPACE
 # Ensure we're in the workspace directory
 cd "$GITHUB_WORKSPACE"
 
-# Ensure workspace has proper permissions
+# Debug current user and permissions
+shout log "Current user and permissions:"
+id
+ls -ld "$GITHUB_WORKSPACE"
+
+# Ensure workspace and artifacts directory have proper permissions
 shout log "Setting workspace permissions"
-chmod -R 755 "$GITHUB_WORKSPACE"
+mkdir -p "$GITHUB_WORKSPACE/artifacts"
+chmod -R 777 "$GITHUB_WORKSPACE"
+chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
 
 # Execute portage with arguments passed to the container
 portage "$@"

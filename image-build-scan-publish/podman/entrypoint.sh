@@ -3,6 +3,11 @@
 # Exit on Non-zero for subsequent commands
 set -e
 
+# Debug current user and permissions before changes
+shout log "Current user and permissions before changes:"
+id
+ls -ld "$GITHUB_WORKSPACE"
+
 chgrp -R podman "$GITHUB_WORKSPACE"
 chmod -R g+w "$GITHUB_WORKSPACE"
 
@@ -32,16 +37,26 @@ fi
 # Ensure we're in the workspace directory
 cd "$GITHUB_WORKSPACE"
 
-# Ensure workspace has proper permissions
+# Debug current user and permissions after initial changes
+shout log "Current user and permissions after initial changes:"
+id
+ls -ld "$GITHUB_WORKSPACE"
+
+# Ensure workspace and artifacts directory have proper permissions
 shout log "Setting workspace permissions"
-chmod -R 775 "$GITHUB_WORKSPACE"
+chmod -R 777 "$GITHUB_WORKSPACE"
 chgrp -R podman "$GITHUB_WORKSPACE"
 
 # Create artifacts directory with proper permissions for podman user
 shout log "Creating artifacts directory in workspace"
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
-chgrp podman "$GITHUB_WORKSPACE/artifacts"
-chmod -R 775 "$GITHUB_WORKSPACE/artifacts"
+chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
+chgrp -R podman "$GITHUB_WORKSPACE/artifacts"
+
+# Debug final permissions
+shout log "Final permissions:"
+ls -ld "$GITHUB_WORKSPACE"
+ls -ld "$GITHUB_WORKSPACE/artifacts"
 
 # Execute portage with arguments passed to the container
 su podman -s /bin/sh -c "portage $*"
