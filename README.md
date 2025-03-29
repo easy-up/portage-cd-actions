@@ -27,14 +27,14 @@ jobs:
           echo full_image_tag="ttl.sh/$(cat /proc/sys/kernel/random/uuid):30m" >> $GITHUB_OUTPUT
           echo full_bundle_tag="ttl.sh/$(cat /proc/sys/kernel/random/uuid):30m" >> $GITHUB_OUTPUT
       - name: Run Portage CD
-        uses: easy-up/portage-cd-actions@belay_main
+        uses: easy-up/portage-cd-actions/image-build-scan-publish/docker@belay_main
         with:
           build_dir: "."
           dockerfile: "Dockerfile"
           tag: ${{ steps.vars.outputs.full_image_tag }}
           bundle_publish_tag: ${{ steps.vars.outputs.full_bundle_tag }}
+          portage_command: 'run all -v'
 ```
-
 ## Versioning
 
 Portage CD Action loosely conforms to Semantic Versioning guidelines and format.
@@ -108,3 +108,4 @@ TODO: Add Content
 ## Troubleshooting
 
 TODO: Add Content
+
