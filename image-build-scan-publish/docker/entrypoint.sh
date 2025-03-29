@@ -23,12 +23,5 @@ fi
 
 git config --global --add safe.directory $GITHUB_WORKSPACE
 
-# Use INPUT_PORTAGE_COMMAND if set, otherwise default to "run"
-CMD=${INPUT_PORTAGE_COMMAND:-"run"}
-
-# If the command is just "run", we need to add "all"
-if [ "$CMD" = "run" ]; then
-  CMD="run all"
-fi
-
-portage $CMD --verbose --semgrep-experimental
+# Execute portage with arguments passed to the container
+portage "$@"
