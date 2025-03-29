@@ -29,5 +29,11 @@ if ([ "$PORTAGE_IMAGE_BUILD_ENABLED" = "0" ] || [ "$PORTAGE_IMAGE_BUILD_ENABLED"
   fi
 fi
 
+# Create artifacts directory with proper permissions for podman user
+shout log "Creating artifacts directory"
+mkdir -p artifacts
+chgrp podman artifacts
+chmod 775 artifacts
+
 # Execute portage with arguments passed to the container
 su podman -s /bin/sh -c "portage $*"

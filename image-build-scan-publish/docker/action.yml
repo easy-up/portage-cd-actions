@@ -50,10 +50,6 @@ inputs:
     description: The full image tag for the target container image
   target:
     description: The target build stage to build (e.g., [linux/amd64])
-  portage_command:
-    description: 'The portage command to run (e.g., "run all -v")'
-    required: false
-    default: 'run'  # default command
 runs:
   using: docker
   image: docker://ghcr.io/easy-up/portage:03b7d45d
