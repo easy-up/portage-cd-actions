@@ -34,8 +34,15 @@ ls -ld "$GITHUB_WORKSPACE"
 # Ensure workspace and artifacts directory have proper permissions
 shout log "Setting workspace permissions"
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
-chmod -R 777 "$GITHUB_WORKSPACE"
+
+# Ensure artifacts directory exists and has proper permissions
+shout log "Setting artifacts directory permissions"
+chown -R portage:portage "$GITHUB_WORKSPACE/artifacts"
 chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
+
+# Debug final permissions
+shout log "Final permissions:"
+ls -ld "$GITHUB_WORKSPACE/artifacts"
 
 # Execute portage with arguments passed to the container
 portage "$@"

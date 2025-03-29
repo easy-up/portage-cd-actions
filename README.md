@@ -24,28 +24,38 @@ jobs:
     permissions:
       contents: write  # Required for creating directories and files
       packages: write  # Required for publishing packages
+      id-token: write # Required for authentication
       
     steps:
       - uses: actions/checkout@v4
-        
+        with:
+          fetch-depth: 0  # This fetches all history
+          fetch-tags: true  # This fetches all tags
+          
       # Set up workspace and artifacts directory
       - name: Create artifacts directory
         run: |
           mkdir -p $GITHUB_WORKSPACE/artifacts
-          chmod -R 755 $GITHUB_WORKSPACE/artifacts
+          sudo chown 1001:1001 $GITHUB_WORKSPACE/artifacts  # Match container's portage user
+          chmod -R 777 $GITHUB_WORKSPACE/artifacts  # Ensure container user can write
           
       - id: vars
         run: |
-          echo full_image_tag="ttl.sh/$(cat /proc/sys/kernel/random/uuid):30m" >> $GITHUB_OUTPUT
-          echo full_bundle_tag="ttl.sh/$(cat /proc/sys/kernel/random/uuid):30m" >> $GITHUB_OUTPUT
+          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo full_image_tag="ghcr.io/${REPO}:${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          echo full_bundle_tag="ghcr.io/${REPO}-bundle:${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
           
       - name: Run Portage CD
         uses: easy-up/portage-cd-actions/image-build-scan-publish/docker@belay_main
+        env:
+          DEPLOY_WEBHOOK_AUTH_HEADER: ${{ secrets.DEPLOY_WEBHOOK_AUTH_HEADER }}
         with:
           build_dir: "."
           dockerfile: "Dockerfile"
           tag: ${{ steps.vars.outputs.full_image_tag }}
           bundle_publish_tag: ${{ steps.vars.outputs.full_bundle_tag }}
+          config_file: ".portage.yml"
+          gatecheck_config_filename: ".custom-gatecheck.yml"
 ```
 ## Versioning
 

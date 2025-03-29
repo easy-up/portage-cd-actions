@@ -44,18 +44,15 @@ ls -ld "$GITHUB_WORKSPACE"
 
 # Ensure workspace and artifacts directory have proper permissions
 shout log "Setting workspace permissions"
-chmod -R 777 "$GITHUB_WORKSPACE"
-chgrp -R podman "$GITHUB_WORKSPACE"
-
-# Create artifacts directory with proper permissions for podman user
-shout log "Creating artifacts directory in workspace"
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
+
+# Ensure artifacts directory exists and has proper permissions
+shout log "Setting artifacts directory permissions"
+chown -R podman:podman "$GITHUB_WORKSPACE/artifacts"
 chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
-chgrp -R podman "$GITHUB_WORKSPACE/artifacts"
 
 # Debug final permissions
 shout log "Final permissions:"
-ls -ld "$GITHUB_WORKSPACE"
 ls -ld "$GITHUB_WORKSPACE/artifacts"
 
 # Execute portage with arguments passed to the container
