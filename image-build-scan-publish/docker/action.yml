@@ -58,7 +58,8 @@ runs:
   using: docker
   image: docker://ghcr.io/easy-up/portage:03b7d45d
   args:
-    - ${{ inputs.portage_command }}
+    - run
+    - all
     - --verbose
     - --semgrep-experimental
   env:

@@ -54,7 +54,8 @@ runs:
   using: docker
   image: docker://ghcr.io/easy-up/portage:podman-03b7d45d
   args:
-    - ${{ inputs.portage_command }}
+    - run
+    - all
     - --verbose
     - --semgrep-experimental
     - --cli-interface
