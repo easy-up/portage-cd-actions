@@ -25,7 +25,15 @@ chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
 su portage -c "
   git config --global --add safe.directory /github/workspace
   git config --global --add safe.directory '*'
+  echo '=== DEBUG: Git config after adding safe.directory ==='
+  git config --list --show-origin
 "
+
+echo "=== DEBUG: Container user info ==="
+whoami
+id
+ls -lad /github/workspace
+ls -la /github/workspace/.git
 
 # Run portage command as portage user
 exec su -s /bin/sh portage -c "
