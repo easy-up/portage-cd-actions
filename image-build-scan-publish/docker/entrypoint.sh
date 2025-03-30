@@ -33,3 +33,6 @@ exec su -s /bin/sh portage -c "
     cd /github/workspace
     portage \$*
 "
+
+sudo chown -R 1001:1001 $GITHUB_WORKSPACE
+sudo chmod -R 755 $GITHUB_WORKSPACE
