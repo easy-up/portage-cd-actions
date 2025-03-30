@@ -3,39 +3,27 @@
 # Exit on Non-zero for subsequent commands
 set -e
 
-shout log "Starting entrypoint script as $(id)"
+shout log "Starting entrypoint script"
 
-# Verify workspace directory exists and is writable
-if [ ! -d "$GITHUB_WORKSPACE" ]; then
-    shout log "Error: GITHUB_WORKSPACE directory does not exist"
-    exit 1
-fi
+# Debug initial state
+shout log "Initial state:"
+id
+ls -la "$GITHUB_WORKSPACE"
 
-# Test write access
-touch "$GITHUB_WORKSPACE/test_write" || {
-    shout log "Error: Cannot write to GITHUB_WORKSPACE"
-    exit 1
-}
-rm "$GITHUB_WORKSPACE/test_write"
+# Set up git configuration at system level (affects all users)
+git config --system --add safe.directory '*'
+git config --system --add safe.directory "$GITHUB_WORKSPACE"
 
-# Ensure artifacts directory exists with correct permissions
+# Create necessary directories with proper permissions
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
-chown -R portage:portage "$GITHUB_WORKSPACE/artifacts"
+mkdir -p /github/home/.semgrep
+
+# Set permissions
+chown -R portage:portage "$GITHUB_WORKSPACE"
+chmod -R 755 "$GITHUB_WORKSPACE"
 chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
-
-# Setup git configuration for portage user
-su portage -c "git config --global --add safe.directory '$GITHUB_WORKSPACE'"
-su portage -c "git config --global --add safe.directory '*'"
-
-# Initialize git repo if needed (as portage user)
-cd "$GITHUB_WORKSPACE"
-if [ ! -d .git ]; then
-    su portage -c "git init && \
-       git config --global user.email 'portage@example.com' && \
-       git config --global user.name 'Portage User' && \
-       git add . && \
-       git commit -m 'Initial commit for scanning'"
-fi
+chown -R portage:portage /github/home/.semgrep
+chmod -R 777 /github/home/.semgrep
 
 # Handle Docker authentication
 if [ -f "$DOCKER_AUTH_JSON" ]; then
@@ -43,14 +31,19 @@ if [ -f "$DOCKER_AUTH_JSON" ]; then
     echo "$DOCKER_AUTH_JSON" | jq . > /home/portage/.docker/config.json
     chown -R portage:portage /home/portage/.docker
 elif [ "$CONTAINER_REGISTRY" != "" ] && [ "$REGISTRY_USER" != "" ] && [ "$REGISTRY_TOKEN" != "" ]; then
-    echo "$REGISTRY_TOKEN" | su portage -c "docker login '$CONTAINER_REGISTRY' -u '$REGISTRY_USER' --password-stdin"
+    echo "$REGISTRY_TOKEN" | docker login "$CONTAINER_REGISTRY" -u "$REGISTRY_USER" --password-stdin
 fi
 
-# Debug information
-shout log "Workspace contents:"
-ls -la "$GITHUB_WORKSPACE"
+# Debug git configuration
 shout log "Git configuration:"
-su portage -c "git config --list"
+git config --list --system
+git config --list --global
 
-# Execute portage as the portage user with all arguments
-exec su portage -c "portage $*"
+# Debug final permissions
+shout log "Final workspace state:"
+ls -la "$GITHUB_WORKSPACE"
+ls -la "$GITHUB_WORKSPACE/artifacts"
+
+# Switch to portage user and run command
+cd "$GITHUB_WORKSPACE"
+exec su -s /bin/sh portage -c "portage $*"
