@@ -1,53 +1,56 @@
-#! /bin/sh
+#!/bin/sh
 
 # Exit on Non-zero for subsequent commands
 set -e
 
-# Debug current user and permissions before changes
-shout log "Current user and permissions before changes:"
-id
-ls -ld "$GITHUB_WORKSPACE"
+shout log "Starting entrypoint script as $(id)"
 
-# Configure git to trust the workspace as the portage user
-su portage -s /bin/sh -c "git config --global --add safe.directory '$GITHUB_WORKSPACE'"
-su portage -s /bin/sh -c "git config --global --add safe.directory '*'"
-
-# Create and set permissions for semgrep directory
-mkdir -p /github/home/.semgrep
-chown -R portage:portage /github/home/.semgrep
-chmod -R 777 /github/home/.semgrep
-
-if [ -f "$DOCKER_AUTH_JSON" ]; then
-  shout log "DOCKER_AUTH_JSON set, creating ~/.docker/config.json"
-  mkdir -p ~/.docker
-  echo $DOCKER_AUTH_JSON | jq . > ~/.docker/config.json
-elif [ "$CONTAINER_REGISTRY" != "" ] && [ "$REGISTRY_USER" != "" ] && [ "$REGISTRY_TOKEN" != "" ]; then
-	shout log "Logging in to registry $CONTAINER_REGISTRY as $REGISTRY_USER"
-	echo "$REGISTRY_TOKEN" | docker login "$CONTAINER_REGISTRY" -u "$REGISTRY_USER" --password-stdin
-else
-  shout log "Skip docker config.json creation, DOCKER_AUTH_JSON not set"
+# Verify workspace directory exists and is writable
+if [ ! -d "$GITHUB_WORKSPACE" ]; then
+    shout log "Error: GITHUB_WORKSPACE directory does not exist"
+    exit 1
 fi
 
-# Ensure we're in the workspace directory
-cd "$GITHUB_WORKSPACE"
+# Test write access
+touch "$GITHUB_WORKSPACE/test_write" || {
+    shout log "Error: Cannot write to GITHUB_WORKSPACE"
+    exit 1
+}
+rm "$GITHUB_WORKSPACE/test_write"
 
-# Debug current user and permissions
-shout log "Current user and permissions:"
-id
-ls -ld "$GITHUB_WORKSPACE"
-
-# Ensure workspace and artifacts directory have proper permissions
-shout log "Setting workspace permissions"
+# Ensure artifacts directory exists with correct permissions
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
+chown -R portage:portage "$GITHUB_WORKSPACE/artifacts"
+chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
 
-# Ensure artifacts directory exists and has proper permissions
-shout log "Setting artifacts directory permissions"
-chown -R portage:portage "$GITHUB_WORKSPACE"
-chmod -R 777 "$GITHUB_WORKSPACE"
+# Setup git configuration for portage user
+su portage -c "git config --global --add safe.directory '$GITHUB_WORKSPACE'"
+su portage -c "git config --global --add safe.directory '*'"
 
-# Debug final permissions
-shout log "Final permissions:"
-ls -ld "$GITHUB_WORKSPACE/artifacts"
+# Initialize git repo if needed (as portage user)
+cd "$GITHUB_WORKSPACE"
+if [ ! -d .git ]; then
+    su portage -c "git init && \
+       git config --global user.email 'portage@example.com' && \
+       git config --global user.name 'Portage User' && \
+       git add . && \
+       git commit -m 'Initial commit for scanning'"
+fi
 
-# Execute portage with arguments passed to the container as the portage user
-su portage -s /bin/sh -c "portage $*"
+# Handle Docker authentication
+if [ -f "$DOCKER_AUTH_JSON" ]; then
+    mkdir -p /home/portage/.docker
+    echo "$DOCKER_AUTH_JSON" | jq . > /home/portage/.docker/config.json
+    chown -R portage:portage /home/portage/.docker
+elif [ "$CONTAINER_REGISTRY" != "" ] && [ "$REGISTRY_USER" != "" ] && [ "$REGISTRY_TOKEN" != "" ]; then
+    echo "$REGISTRY_TOKEN" | su portage -c "docker login '$CONTAINER_REGISTRY' -u '$REGISTRY_USER' --password-stdin"
+fi
+
+# Debug information
+shout log "Workspace contents:"
+ls -la "$GITHUB_WORKSPACE"
+shout log "Git configuration:"
+su portage -c "git config --list"
+
+# Execute portage as the portage user with all arguments
+exec su portage -c "portage $*"
