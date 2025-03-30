@@ -21,6 +21,10 @@ chown -R portage:portage /github/home/.semgrep
 chmod -R 777 /github/home/.semgrep
 chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
 
+# Force entire .git folder to match portage's UID/GID
+chown -R portage:portage /github/workspace/.git
+chmod -R 755 /github/workspace/.git
+
 # If you need to trust /github/workspace + *:
 su portage -c "
   git config --global --add safe.directory /github/workspace
