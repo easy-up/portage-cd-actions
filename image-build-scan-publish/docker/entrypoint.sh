@@ -11,10 +11,20 @@ id
 pwd
 ls -la
 
-# Set up git configuration globally (not system-wide)
-git config --global --add safe.directory '*'
-git config --global --add safe.directory "$GITHUB_WORKSPACE"
+# Set HOME for portage user
+export HOME=/github/home
+
+# Set up git configuration for portage user
 git config --global --add safe.directory /github/workspace
+git config --global --add safe.directory '*'
+git config --global core.excludesfile /home/portage/.gitignore_global
+git config --global user.email 'portage@github.actions'
+git config --global user.name 'Portage CI'
+
+# Test git access
+cd /github/workspace
+git rev-parse --git-dir
+git status
 
 # Create necessary directories
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
@@ -24,44 +34,9 @@ mkdir -p /github/home/.semgrep
 chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
 chmod -R 777 /github/home/.semgrep
 
-# Initialize git for portage user
-su portage -c "
-    cd '$GITHUB_WORKSPACE'
-    export HOME=/github/home
-    
-    # Configure git
-    git config --global --add safe.directory '$GITHUB_WORKSPACE'
-    git config --global --add safe.directory /github/workspace
-    git config --global --add safe.directory '*'
-    
-    # Set git identity
-    git config --global user.email 'portage@github.actions'
-    git config --global user.name 'Portage CI'
-    
-    # Verify git setup
-    git rev-parse --git-dir
-    git status
-"
-
-# Debug semgrep directory
-shout log "Semgrep directory permissions:"
-ls -la /github/home/.semgrep
-ls -la /github/home
-
-# Debug final permissions
-shout log "Final workspace state:"
-ls -la "$GITHUB_WORKSPACE"
-ls -la "$GITHUB_WORKSPACE/artifacts"
-
-# After initial debug output
-shout log "Git repository state:"
-ls -la "$GITHUB_WORKSPACE/.git" || echo "No .git directory found"
-git status || echo "Git status failed"
-git log --oneline -n 1 || echo "Git log failed"
-
-# Switch to portage user and run command
+# Run portage command as portage user
 exec su -s /bin/sh portage -c "
     export HOME=/github/home
-    cd '$GITHUB_WORKSPACE'
-    portage $*
+    cd /github/workspace
+    portage \$*
 "
