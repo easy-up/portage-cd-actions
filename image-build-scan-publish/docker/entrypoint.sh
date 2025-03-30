@@ -11,28 +11,35 @@ id
 pwd
 ls -la
 
-# Set HOME for portage user
+# Set HOME and create necessary directories
 export HOME=/github/home
-
-# Set up git configuration for portage user
-git config --global --add safe.directory /github/workspace
-git config --global --add safe.directory '*'
-git config --global core.excludesfile /home/portage/.gitignore_global
-git config --global user.email 'portage@github.actions'
-git config --global user.name 'Portage CI'
-
-# Test git access
-cd /github/workspace
-git rev-parse --git-dir
-git status
-
-# Create necessary directories
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
 mkdir -p /github/home/.semgrep
 
-# Set permissions
-chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
+# Set up git configuration for root first
+git config --system --add safe.directory '*'
+git config --system --add safe.directory /github/workspace
+
+# Set permissions for portage user
+chown -R portage:portage /github/home/.semgrep
 chmod -R 777 /github/home/.semgrep
+chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
+
+# Initialize git for portage user
+su portage -c "
+    cd /github/workspace
+    export HOME=/github/home
+    
+    # Configure git
+    git config --global --add safe.directory /github/workspace
+    git config --global --add safe.directory '*'
+    git config --global user.email 'portage@github.actions'
+    git config --global user.name 'Portage CI'
+    
+    # Test git access
+    git rev-parse --git-dir
+    git status
+"
 
 # Run portage command as portage user
 exec su -s /bin/sh portage -c "
