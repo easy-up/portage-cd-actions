@@ -47,13 +47,13 @@ ls -la /github/home
 git config --system --add safe.directory '*'
 git config --system --add safe.directory "$GITHUB_WORKSPACE"
 
-# Create necessary directories with proper permissions
+# Create artifacts directory if it doesn't exist
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
-
-# Set permissions
-chown -R portage:portage "$GITHUB_WORKSPACE"
-chmod -R 755 "$GITHUB_WORKSPACE"
 chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
+
+# Reset any permission changes in git
+cd "$GITHUB_WORKSPACE"
+git reset --hard HEAD
 
 # Handle Docker authentication
 if [ -f "$DOCKER_AUTH_JSON" ]; then
@@ -81,12 +81,9 @@ git status || echo "Git status failed"
 git log --oneline -n 1 || echo "Git log failed"
 
 # Switch to portage user and run command
-cd "$GITHUB_WORKSPACE"
 exec su -s /bin/sh portage -c "
     export HOME=/github/home
+    cd '$GITHUB_WORKSPACE'
     git config --global --add safe.directory '$GITHUB_WORKSPACE'
-    git config --global init.defaultBranch main
-    git branch -M main
-    git branch --set-upstream-to=origin/main main
     portage $*
 "
