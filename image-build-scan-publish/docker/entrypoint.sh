@@ -16,30 +16,10 @@ export HOME=/github/home
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
 mkdir -p /github/home/.semgrep
 
-# Set up git configuration for root first
-git config --system --add safe.directory '*'
-git config --system --add safe.directory /github/workspace
-
 # Set permissions for portage user
 chown -R portage:portage /github/home/.semgrep
 chmod -R 777 /github/home/.semgrep
 chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
-
-# Initialize git for portage user
-su portage -c "
-    cd /github/workspace
-    export HOME=/github/home
-    
-    # Configure git
-    git config --global --add safe.directory /github/workspace
-    git config --global --add safe.directory '*'
-    git config --global user.email 'portage@github.actions'
-    git config --global user.name 'Portage CI'
-    
-    # Test git access
-    git rev-parse --git-dir
-    git status
-"
 
 # Run portage command as portage user
 exec su -s /bin/sh portage -c "
