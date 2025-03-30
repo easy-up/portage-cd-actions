@@ -11,10 +11,10 @@ id
 pwd
 ls -la
 
-# Set up git configuration at system level first
-git config --system --add safe.directory '*'
-git config --system --add safe.directory "$GITHUB_WORKSPACE"
-git config --system --add safe.directory /github/workspace
+# Set up git configuration globally (not system-wide)
+git config --global --add safe.directory '*'
+git config --global --add safe.directory "$GITHUB_WORKSPACE"
+git config --global --add safe.directory /github/workspace
 
 # Create necessary directories
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
@@ -34,7 +34,7 @@ su portage -c "
     git config --global --add safe.directory /github/workspace
     git config --global --add safe.directory '*'
     
-    # Set git identity (required for some git operations)
+    # Set git identity
     git config --global user.email 'portage@github.actions'
     git config --global user.name 'Portage CI'
     
