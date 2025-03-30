@@ -21,6 +21,12 @@ chown -R portage:portage /github/home/.semgrep
 chmod -R 777 /github/home/.semgrep
 chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
 
+# If you need to trust /github/workspace + *:
+su portage -c "
+  git config --global --add safe.directory /github/workspace
+  git config --global --add safe.directory '*'
+"
+
 # Run portage command as portage user
 exec su -s /bin/sh portage -c "
     export HOME=/github/home
