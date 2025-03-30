@@ -11,25 +11,24 @@ id
 pwd
 ls -la
 
-# Debug git state in container
+# Setup git configuration in container
+shout log "Setting up git configuration:"
+git config --global --add safe.directory "$GITHUB_WORKSPACE"
+git config --global --add safe.directory /github/workspace
+git config --global init.defaultBranch main
+
+# Ensure git knows about the branch
+cd "$GITHUB_WORKSPACE"
+git branch -M main
+git branch --set-upstream-to=origin/main main
+
+# Debug git state
 shout log "Git state in container:"
 echo "Current directory: $(pwd)"
-echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-ls -la "$GITHUB_WORKSPACE/.git" || echo "No .git directory found"
-git rev-parse --git-dir || echo "Not in a git repository"
-git status || echo "Git status failed"
-
-# Configure git for portage user
-su portage -s /bin/sh << 'EOF'
-git config --global --add safe.directory "$GITHUB_WORKSPACE"
-git config --global --list
-
-# Test git commands as portage user:
-echo "Testing git commands as portage user:"
-pwd
-git status
-git rev-parse --git-dir
-EOF
+echo "Branch info:"
+git branch -vv
+git rev-parse --abbrev-ref HEAD
+git remote -v
 
 # Ensure semgrep directory exists with proper permissions
 mkdir -p /github/home/.semgrep
@@ -83,4 +82,11 @@ git log --oneline -n 1 || echo "Git log failed"
 
 # Switch to portage user and run command
 cd "$GITHUB_WORKSPACE"
-exec su -s /bin/sh portage -c "HOME=/github/home portage $*"
+exec su -s /bin/sh portage -c "
+    export HOME=/github/home
+    git config --global --add safe.directory '$GITHUB_WORKSPACE'
+    git config --global init.defaultBranch main
+    git branch -M main
+    git branch --set-upstream-to=origin/main main
+    portage $*
+"
