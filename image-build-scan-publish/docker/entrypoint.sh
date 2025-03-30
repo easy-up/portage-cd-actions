@@ -54,6 +54,12 @@ shout log "Final workspace state:"
 ls -la "$GITHUB_WORKSPACE"
 ls -la "$GITHUB_WORKSPACE/artifacts"
 
+# After initial debug output
+shout log "Git repository state:"
+ls -la "$GITHUB_WORKSPACE/.git" || echo "No .git directory found"
+git status || echo "Git status failed"
+git log --oneline -n 1 || echo "Git log failed"
+
 # Switch to portage user and run command
 cd "$GITHUB_WORKSPACE"
 exec su -s /bin/sh portage -c "HOME=/github/home portage $*"
