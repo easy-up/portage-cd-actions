@@ -10,20 +10,30 @@ shout log "Initial state:"
 id
 ls -la "$GITHUB_WORKSPACE"
 
-# Set up git configuration at system level (affects all users)
+# Ensure semgrep directory exists with proper permissions
+mkdir -p /github/home/.semgrep
+chown -R portage:portage /github/home/.semgrep
+chmod -R 777 /github/home/.semgrep
+
+# Set HOME for portage user
+export HOME=/github/home
+
+# Debug semgrep directory
+shout log "Semgrep directory permissions:"
+ls -la /github/home/.semgrep
+ls -la /github/home
+
+# Set up git configuration at system level
 git config --system --add safe.directory '*'
 git config --system --add safe.directory "$GITHUB_WORKSPACE"
 
 # Create necessary directories with proper permissions
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
-mkdir -p /github/home/.semgrep
 
 # Set permissions
 chown -R portage:portage "$GITHUB_WORKSPACE"
 chmod -R 755 "$GITHUB_WORKSPACE"
 chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
-chown -R portage:portage /github/home/.semgrep
-chmod -R 777 /github/home/.semgrep
 
 # Handle Docker authentication
 if [ -f "$DOCKER_AUTH_JSON" ]; then
@@ -46,4 +56,4 @@ ls -la "$GITHUB_WORKSPACE/artifacts"
 
 # Switch to portage user and run command
 cd "$GITHUB_WORKSPACE"
-exec su -s /bin/sh portage -c "portage $*"
+exec su -s /bin/sh portage -c "HOME=/github/home portage $*"
