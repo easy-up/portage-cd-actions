@@ -44,3 +44,10 @@ exec su -s /bin/sh portage -c "
 
 sudo chown -R 1001:1001 $GITHUB_WORKSPACE
 sudo chmod -R 755 $GITHUB_WORKSPACE
+
+# Force .git directory to match user 1001:1001
+sudo chown -R 1001:1001 $GITHUB_WORKSPACE/.git
+sudo chmod -R 755 $GITHUB_WORKSPACE/.git
+
+# Optional: double-check .git/index
+ls -la $GITHUB_WORKSPACE/.git
