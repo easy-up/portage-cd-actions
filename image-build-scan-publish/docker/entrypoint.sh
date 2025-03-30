@@ -8,7 +8,28 @@ shout log "Starting entrypoint script"
 # Debug initial state
 shout log "Initial state:"
 id
-ls -la "$GITHUB_WORKSPACE"
+pwd
+ls -la
+
+# Debug git state in container
+shout log "Git state in container:"
+echo "Current directory: $(pwd)"
+echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+ls -la "$GITHUB_WORKSPACE/.git" || echo "No .git directory found"
+git rev-parse --git-dir || echo "Not in a git repository"
+git status || echo "Git status failed"
+
+# Configure git for portage user
+su portage -s /bin/sh << 'EOF'
+git config --global --add safe.directory "$GITHUB_WORKSPACE"
+git config --global --list
+
+# Test git commands as portage user:
+echo "Testing git commands as portage user:"
+pwd
+git status
+git rev-parse --git-dir
+EOF
 
 # Ensure semgrep directory exists with proper permissions
 mkdir -p /github/home/.semgrep
