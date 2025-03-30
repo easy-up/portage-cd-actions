@@ -11,34 +11,37 @@ id
 pwd
 ls -la
 
-# Set up git configuration for both root and portage user
+# Set up git configuration at system level first
 git config --system --add safe.directory '*'
 git config --system --add safe.directory "$GITHUB_WORKSPACE"
 git config --system --add safe.directory /github/workspace
 
-# Create artifacts directory if it doesn't exist
+# Create necessary directories
 mkdir -p "$GITHUB_WORKSPACE/artifacts"
-chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
+mkdir -p /github/home/.semgrep
 
-# Set up git for portage user
+# Set permissions
+chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
+chmod -R 777 /github/home/.semgrep
+
+# Initialize git for portage user
 su portage -c "
     cd '$GITHUB_WORKSPACE'
+    export HOME=/github/home
+    
+    # Configure git
     git config --global --add safe.directory '$GITHUB_WORKSPACE'
     git config --global --add safe.directory /github/workspace
     git config --global --add safe.directory '*'
     
-    # Test git access
+    # Set git identity (required for some git operations)
+    git config --global user.email 'portage@github.actions'
+    git config --global user.name 'Portage CI'
+    
+    # Verify git setup
+    git rev-parse --git-dir
     git status
-    git rev-parse HEAD
 "
-
-# Ensure semgrep directory exists with proper permissions
-mkdir -p /github/home/.semgrep
-chown -R portage:portage /github/home/.semgrep
-chmod -R 777 /github/home/.semgrep
-
-# Set HOME for portage user
-export HOME=/github/home
 
 # Debug semgrep directory
 shout log "Semgrep directory permissions:"
@@ -57,7 +60,6 @@ git status || echo "Git status failed"
 git log --oneline -n 1 || echo "Git log failed"
 
 # Switch to portage user and run command
-cd "$GITHUB_WORKSPACE"
 exec su -s /bin/sh portage -c "
     export HOME=/github/home
     cd '$GITHUB_WORKSPACE'
