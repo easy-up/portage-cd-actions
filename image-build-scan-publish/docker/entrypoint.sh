@@ -22,8 +22,11 @@ chmod -R 777 /github/home/.semgrep
 chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
 
 # Force entire .git folder to match portage's UID/GID
+shout log "INFO: Enforcing .git directory ownership for portage user"
 chown -R portage:portage /github/workspace/.git
 chmod -R 755 /github/workspace/.git
+shout log "DEBUG: After adjusting .git directory ownership"
+ls -la /github/workspace/.git
 
 # If you need to trust /github/workspace + *:
 su portage -c "
