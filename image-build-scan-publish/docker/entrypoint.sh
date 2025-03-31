@@ -43,7 +43,7 @@ ls -lad /github/workspace
 ls -la /github/workspace/.git
 
 # Run portage command as portage user
-exec su -s /bin/sh portage -c "
+exec su -s /bin/sh 1001 -c "
     export HOME=/github/home
     cd /github/workspace
     portage \$*

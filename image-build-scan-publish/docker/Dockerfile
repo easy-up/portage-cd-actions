@@ -20,5 +20,7 @@ COPY entrypoint.sh /entrypoint.sh
 # GitHub actions containers must run as root
 USER root
 
-# Code file to execute when the docker container starts up (`entrypoint.sh`)
-ENTRYPOINT ["/entrypoint.sh"]
+RUN adduser -D -u 1001 portage && \
+    addgroup portage root
+
+# Code file to execute when the docker container starts up (`
