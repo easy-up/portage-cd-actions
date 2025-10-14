@@ -40,6 +40,10 @@ jobs:
             image_tag=${GITHUB_REF/refs\/tags\//}
           elif [[ $GITHUB_REF == refs/heads/debug* ]]; then
             image_tag=${GITHUB_REF/refs\/heads\//}
+          elif [[ $GITHUB_REF == refs/heads/belay_main ]]; then
+            # Maintain a stable alias that always points to the latest belay_main build
+            echo "branch_latest_tag=$image_repo:belay-main-latest" >> $GITHUB_OUTPUT
+            echo "podman_branch_latest_tag=$image_repo:podman-belay-main-latest" >> $GITHUB_OUTPUT
           fi
           # Image Names
           echo "image_name=$image_repo:$image_tag" >> $GITHUB_OUTPUT 
@@ -52,7 +56,9 @@ jobs:
         with:
           context: ./image-build-scan-publish/docker/
           push: true
-          tags: ${{ steps.vars.outputs.image_name }}
+          tags: |
+            ${{ steps.vars.outputs.image_name }}
+            ${{ steps.vars.outputs.branch_latest_tag }}
           build-args: "VERSION=${{ steps.vars.outputs.version }}"
 
       - name: Build and push podman target
@@ -60,7 +66,9 @@ jobs:
         with:
           context: ./image-build-scan-publish/podman/
           push: true
-          tags: ${{ steps.vars.outputs.podman_image_name }}
+          tags: |
+            ${{ steps.vars.outputs.podman_image_name }}
+            ${{ steps.vars.outputs.podman_branch_latest_tag }}
           build-args: "VERSION=${{ steps.vars.outputs.version }}"
 
       - name: job summary
