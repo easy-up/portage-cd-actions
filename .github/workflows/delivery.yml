@@ -77,3 +77,9 @@ jobs:
           echo "## Docker Action Image Build and Push Summary" >> $GITHUB_STEP_SUMMARY
           echo ":white_check_mark: Image (Docker CLI): ${{ steps.vars.outputs.image_name }}" >> $GITHUB_STEP_SUMMARY
           echo ":white_check_mark: Image (Podman CLI): ${{ steps.vars.outputs.podman_image_name }}" >> $GITHUB_STEP_SUMMARY
+          if [[ -n "${{ steps.vars.outputs.branch_latest_tag }}" ]]; then
+            echo ":label: Stable alias (Docker CLI): ${{ steps.vars.outputs.branch_latest_tag }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [[ -n "${{ steps.vars.outputs.podman_branch_latest_tag }}" ]]; then
+            echo ":label: Stable alias (Podman CLI): ${{ steps.vars.outputs.podman_branch_latest_tag }}" >> $GITHUB_STEP_SUMMARY
+          fi
