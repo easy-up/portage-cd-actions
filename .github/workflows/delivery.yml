@@ -6,10 +6,17 @@ permissions:
   checks: write
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types:
+      - portage-updated
   push:
+    branches:
+      - main
+      - belay_main
   pull_request:
     branches:
       - main
+      - belay_main
 jobs:
   image_delivery:
     runs-on: ubuntu-latest
@@ -34,6 +41,7 @@ jobs:
         run: |
           image_repo=ghcr.io/easy-up/portage-action
           image_tag=${GITHUB_SHA::8}
+          portage_version=$(cat PORTAGE_VERSION)
           # If on a git tag like vx.x.x, change the image tag to reflect
           echo "GITHUB_REF: $GITHUB_REF"
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
@@ -44,17 +52,19 @@ jobs:
             # Maintain a stable alias that always points to the latest belay_main build
             echo "branch_latest_tag=$image_repo:belay-main-latest" >> $GITHUB_OUTPUT
             echo "podman_branch_latest_tag=$image_repo:podman-belay-main-latest" >> $GITHUB_OUTPUT
+            portage_version=belay-main-latest
           fi
           # Image Names
           echo "image_name=$image_repo:$image_tag" >> $GITHUB_OUTPUT 
           echo "podman_image_name=$image_repo:podman-$image_tag" >> $GITHUB_OUTPUT 
           # Build Variables
-          echo "version=$(cat PORTAGE_VERSION)" >> $GITHUB_OUTPUT
+          echo "version=$portage_version" >> $GITHUB_OUTPUT
 
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: ./image-build-scan-publish/docker/
+          pull: true
           push: true
           tags: |
             ${{ steps.vars.outputs.image_name }}
@@ -65,6 +75,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./image-build-scan-publish/podman/
+          pull: true
           push: true
           tags: |
             ${{ steps.vars.outputs.podman_image_name }}
