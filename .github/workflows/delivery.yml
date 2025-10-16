@@ -42,6 +42,7 @@ jobs:
           image_repo=ghcr.io/easy-up/portage-action
           image_tag=${GITHUB_SHA::8}
           portage_version=$(cat PORTAGE_VERSION)
+          echo "portage_version: $portage_version"
           # If on a git tag like vx.x.x, change the image tag to reflect
           echo "GITHUB_REF: $GITHUB_REF"
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
