@@ -16,9 +16,14 @@ fi
 
 if ([ "$PORTAGE_IMAGE_BUILD_ENABLED" = "0" ] || [ "$PORTAGE_IMAGE_BUILD_ENABLED" = "false" ]); then
   if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
-    shout log "Pull Image Scan target tag. Image Build not enabled, Image Scan enabled."
+    shout log "Image Build not enabled, Image Scan enabled. Pulling Image Scan target tag."
     docker pull "$PORTAGE_IMAGE_TAG"
   fi
+fi
+
+if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
+  shout log "Image Scan enabled. Updating grype db."
+  grype db update
 fi
 
 git config --global --add safe.directory $GITHUB_WORKSPACE

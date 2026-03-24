@@ -24,9 +24,14 @@ fi
 
 if ([ "$PORTAGE_IMAGE_BUILD_ENABLED" = "0" ] || [ "$PORTAGE_IMAGE_BUILD_ENABLED" = "false" ]); then
   if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
-    shout log "Pull Image Scan target tag. Image Build not enabled, Image Scan enabled."
+    shout log "Image Build not enabled, Image Scan enabled. Pulling Image Scan target tag."
     su podman -s /bin/sh -c "docker pull \"$PORTAGE_IMAGE_TAG\""
   fi
+fi
+
+if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
+  shout log "Image Scan enabled. Updating grype db."
+  GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.grype-db" su podman -s /bin/sh -c "grype db update"
 fi
 
 su podman -s /bin/sh -c "portage run all --verbose --semgrep-experimental --cli-interface podman"
