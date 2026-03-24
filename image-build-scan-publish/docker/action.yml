@@ -50,6 +50,9 @@ inputs:
     description: The full image tag for the target container image
   target:
     description: The target build stage to build (e.g., [linux/amd64])
+  maximum_vulnerability_db_age:
+    description: "The maximum allowed age for the vulnerability database (default: 48h)"
+    default: "48h"
 runs:
   using: docker
   image: docker://ghcr.io/easy-up/portage-action@sha256:6ac5512c570931d68b1c89390f16a59724bd971de86bb95d3832b082aacc5168
@@ -78,3 +81,4 @@ runs:
     PORTAGE_IMAGE_TAG: ${{ inputs.tag }}
     REGISTRY_TOKEN: ${{ inputs.registry_token }}
     REGISTRY_USER: ${{ inputs.registry_user }}
+    GRYPE_DB_MAX_ALLOWED_BUILT_AGE: ${{ inputs.maximum_vulnerability_db_age }}

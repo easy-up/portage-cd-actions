@@ -1,4 +1,4 @@
-name: Build portage images for use it GitHub actions.
+name: Build portage images for use in GitHub actions.
 run-name: "Build Portage CD Action Images"
 permissions:
   contents: read

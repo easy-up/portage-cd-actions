@@ -31,7 +31,7 @@ fi
 
 if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
   echo "Image Scan enabled. Updating grype db."
-  GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.grype-db" su podman -s /bin/sh -c "grype db update"
+  GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" su podman -s /bin/sh -c "grype db update"
 fi
 
-su podman -s /bin/sh -c "portage run all --verbose --semgrep-experimental --cli-interface podman"
+GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" su podman -s /bin/sh -c "portage run all --verbose --semgrep-experimental --cli-interface podman"

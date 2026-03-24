@@ -23,9 +23,9 @@ fi
 
 if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
   echo "Image Scan enabled. Updating grype db."
-  grype db update
+  GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" grype db update
 fi
 
 git config --global --add safe.directory $GITHUB_WORKSPACE
 
-portage run all --verbose --semgrep-experimental
+GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" portage run all --verbose --semgrep-experimental
