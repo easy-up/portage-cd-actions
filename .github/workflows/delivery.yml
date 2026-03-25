@@ -9,9 +9,23 @@ on:
   push:
     branches:
       - main
+    paths:
+      - .github/workflows/delivery.yml
+      - PORTAGE_VERSION
+      - docker/Dockerfile
+      - docker/entrypoint.sh
+      - podman/Dockerfile
+      - podman/entrypoint.sh
   pull_request:
     branches:
       - main
+    paths:
+      - .github/workflows/delivery.yml
+      - PORTAGE_VERSION
+      - docker/Dockerfile
+      - docker/entrypoint.sh
+      - podman/Dockerfile
+      - podman/entrypoint.sh
 jobs:
   image_build:
     strategy:
