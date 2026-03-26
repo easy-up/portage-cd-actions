@@ -3,8 +3,8 @@
 # Exit on Non-zero for subsequent commands
 set -e
 
-echo "============ Docker Info ============"
-docker info
+echo "============ Create docker-container builder ============"
+docker buildx create --driver docker-container --name container-builder --use --bootstrap
 echo "============ Docker Buildx List ============"
 docker buildx ls
 echo "============ Portage ============"
