@@ -3,6 +3,12 @@
 # Exit on Non-zero for subsequent commands
 set -e
 
+echo "============ Docker Info ============"
+docker info
+echo "============ Docker Buildx List ============"
+docker buildx ls
+echo "============ Portage ============"
+
 if [ -f "$DOCKER_AUTH_JSON" ]; then
   echo "DOCKER_AUTH_JSON set, creating ~/.docker/config.json"
   mkdir -p ~/.docker
