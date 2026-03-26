@@ -3,12 +3,6 @@
 # Exit on Non-zero for subsequent commands
 set -e
 
-echo "============ Create docker-container builder ============"
-docker buildx create --driver docker-container --name container-builder --use --bootstrap
-echo "============ Docker Buildx List ============"
-docker buildx ls
-echo "============ Portage ============"
-
 if [ -f "$DOCKER_AUTH_JSON" ]; then
   echo "DOCKER_AUTH_JSON set, creating ~/.docker/config.json"
   mkdir -p ~/.docker
@@ -34,4 +28,7 @@ fi
 
 git config --global --add safe.directory $GITHUB_WORKSPACE
 
-GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" portage run all --verbose --semgrep-experimental
+# In order for --cache-from and --cache-to to work with BuildKit, we need to use the docker-container driver.
+docker buildx create --name buildkit-container --driver docker-container --driver-opt default-load=true --use --bootstrap
+
+GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" portage run all --verbose --semgrep-experimental --use-buildx
