@@ -7,5 +7,7 @@ COPY entrypoint.sh /entrypoint.sh
 # GitHub actions containers must run as root
 USER root
 
+RUN apk add --no-cache jq
+
 # Code file to execute when the docker container starts up (`entrypoint.sh`)
 ENTRYPOINT ["/entrypoint.sh"]
