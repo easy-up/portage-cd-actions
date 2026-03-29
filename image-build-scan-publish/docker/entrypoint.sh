@@ -8,8 +8,8 @@ if [ -f "$DOCKER_AUTH_JSON" ]; then
   mkdir -p ~/.docker
   echo $DOCKER_AUTH_JSON | jq . > ~/.docker/config.json
 elif [ "$CONTAINER_REGISTRY" != "" ] && [ "$REGISTRY_USER" != "" ] && [ "$REGISTRY_TOKEN" != "" ]; then
-	echo "[DEBUG] (portage-cd-action): Logging in to registry $CONTAINER_REGISTRY as $REGISTRY_USER"
-	echo "$REGISTRY_TOKEN" | docker login "$CONTAINER_REGISTRY" -u "$REGISTRY_USER" --password-stdin
+  echo "[DEBUG] (portage-cd-action): Logging in to registry $CONTAINER_REGISTRY as $REGISTRY_USER"
+  echo "$REGISTRY_TOKEN" | docker login "$CONTAINER_REGISTRY" -u "$REGISTRY_USER" --password-stdin
 else
   echo "[DEBUG] (portage-cd-action): Skip docker config.json creation, DOCKER_AUTH_JSON not set"
 fi
