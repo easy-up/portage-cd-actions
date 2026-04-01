@@ -32,6 +32,8 @@ fi
 if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
   echo "[DEBUG] (portage-cd-action): Image Scan enabled. Updating grype db."
   GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" su podman -s /bin/sh -c "grype db update"
+  # Allow all users to read the grype-db so that the github runner can read the cache.
+  chmod -R a+rX "$GITHUB_WORKSPACE/.cache/grype-db"
 fi
 
 GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" su podman -s /bin/sh -c "portage run all --verbose --semgrep-experimental --cli-interface podman"
