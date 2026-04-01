@@ -52,7 +52,7 @@ inputs:
     description: The target build stage to build (e.g., [linux/amd64])
 runs:
   using: docker
-  image: docker://ghcr.io/easy-up/portage-action@sha256:67e0dded34c2bcea23d40471ab318a92cff43dbf0529ffc0ba4b5fab77cdbdeb
+  image: docker://ghcr.io/easy-up/portage-action@sha256:511e8327c959a9c0820a414791d1698d08664e00c91821a693875fdb3a8a7f01
   args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
