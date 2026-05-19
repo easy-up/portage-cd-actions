@@ -1,4 +1,4 @@
-name: Build portage images for use it GitHub actions.
+name: Build Portage images for use in GitHub Actions.
 run-name: "Build Portage CD Action Images"
 permissions:
   contents: read
@@ -13,74 +13,85 @@ on:
     branches:
       - main
       - belay_main
+    paths: &build_paths
+      - .github/workflows/delivery.yml
+      - PORTAGE_VERSION
+      - image-build-scan-publish/docker/Dockerfile
+      - image-build-scan-publish/docker/entrypoint.sh
+      - image-build-scan-publish/podman/Dockerfile
+      - image-build-scan-publish/podman/entrypoint.sh
   pull_request:
     branches:
       - main
       - belay_main
+    paths: *build_paths
+
 jobs:
-  image_delivery:
-    runs-on: ubuntu-latest
-    name: Build Image with Docker Action
+  image_build:
+    strategy:
+      matrix:
+        include:
+          - arch: 'amd64'
+            runs-on: ubuntu-latest
+          - arch: 'arm64'
+            runs-on: ubuntu-24.04-arm
+
+    name: Build and Push Image for ${{ matrix.arch }}
+    runs-on: ${{ matrix.runs-on }}
     steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set outputs
         id: vars
         run: |
-          image_repo=ghcr.io/easy-up/portage-action
-          image_tag=${GITHUB_SHA::8}
-          portage_version=$(cat PORTAGE_VERSION)
-          echo "portage_version: $portage_version"
+          IMAGE_REPO=ghcr.io/easy-up/portage-action
+          IMAGE_ARCH=${{ matrix.arch }}
+          IMAGE_TAG=${GITHUB_SHA::8}
+          PORTAGE_VERSION=$(cat PORTAGE_VERSION)
+          echo "PORTAGE_VERSION (from file): $PORTAGE_VERSION"
           # If on a git tag like vx.x.x, change the image tag to reflect
           echo "GITHUB_REF: $GITHUB_REF"
           if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            image_tag=${GITHUB_REF/refs\/tags\//}
+            IMAGE_TAG=${GITHUB_REF/refs\/tags\//}
           elif [[ $GITHUB_REF == refs/heads/debug* ]]; then
-            image_tag=${GITHUB_REF/refs\/heads\//}
+            IMAGE_TAG=${GITHUB_REF/refs\/heads\//}
           elif [[ $GITHUB_REF == refs/heads/belay_main ]]; then
-            # Maintain a stable alias that always points to the latest belay_main build
-            echo "branch_latest_tag=$image_repo:belay-main-latest" >> $GITHUB_OUTPUT
-            echo "podman_branch_latest_tag=$image_repo:podman-belay-main-latest" >> $GITHUB_OUTPUT
-            portage_version=belay-main-latest
+            # Belay: build action FROM the belay_main floating tag of the portage base image.
+            PORTAGE_VERSION=belay-main-latest
           fi
-          # Image Names
-          echo "image_name=$image_repo:$image_tag" >> $GITHUB_OUTPUT 
-          echo "podman_image_name=$image_repo:podman-$image_tag" >> $GITHUB_OUTPUT 
+          # Image Names (per-arch; the multi-arch manifest is created in push_manifest)
+          echo "image_name=$IMAGE_REPO:$IMAGE_ARCH-$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "podman_image_name=$IMAGE_REPO:podman-$IMAGE_ARCH-$IMAGE_TAG" >> $GITHUB_OUTPUT
           # Build Variables
-          echo "version=$portage_version" >> $GITHUB_OUTPUT
+          echo "version=$PORTAGE_VERSION" >> $GITHUB_OUTPUT
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
+          platforms: linux/${{ matrix.arch }}
           context: ./image-build-scan-publish/docker/
           pull: true
           push: true
-          tags: |
-            ${{ steps.vars.outputs.image_name }}
-            ${{ steps.vars.outputs.branch_latest_tag }}
+          tags: ${{ steps.vars.outputs.image_name }}
           build-args: "VERSION=${{ steps.vars.outputs.version }}"
 
       - name: Build and push podman target
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7.0.0
         with:
+          platforms: linux/${{ matrix.arch }}
           context: ./image-build-scan-publish/podman/
           pull: true
           push: true
-          tags: |
-            ${{ steps.vars.outputs.podman_image_name }}
-            ${{ steps.vars.outputs.podman_branch_latest_tag }}
+          tags: ${{ steps.vars.outputs.podman_image_name }}
           build-args: "VERSION=${{ steps.vars.outputs.version }}"
 
       - name: job summary
@@ -89,9 +100,79 @@ jobs:
           echo "## Docker Action Image Build and Push Summary" >> $GITHUB_STEP_SUMMARY
           echo ":white_check_mark: Image (Docker CLI): ${{ steps.vars.outputs.image_name }}" >> $GITHUB_STEP_SUMMARY
           echo ":white_check_mark: Image (Podman CLI): ${{ steps.vars.outputs.podman_image_name }}" >> $GITHUB_STEP_SUMMARY
-          if [[ -n "${{ steps.vars.outputs.branch_latest_tag }}" ]]; then
-            echo ":label: Stable alias (Docker CLI): ${{ steps.vars.outputs.branch_latest_tag }}" >> $GITHUB_STEP_SUMMARY
+
+  push_manifest:
+    name: Create and Push Manifests
+    needs: image_build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: docker/login-action@b45d80f862d83dbcd57f89517bcf500b2ab88fb2 # v4.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set variables
+        id: vars
+        run: |
+          IMAGE_REPO=ghcr.io/easy-up/portage-action
+          IMAGE_TAG=${GITHUB_SHA::8}
+          # If on a git tag like vx.x.x, change the image tag to reflect
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            IMAGE_TAG=${GITHUB_REF/refs\/tags\//}
           fi
-          if [[ -n "${{ steps.vars.outputs.podman_branch_latest_tag }}" ]]; then
-            echo ":label: Stable alias (Podman CLI): ${{ steps.vars.outputs.podman_branch_latest_tag }}" >> $GITHUB_STEP_SUMMARY
+          # Image Names
+          # Note: the images produced by the build are actually manifest lists, so in order to
+          #       combine them into a single multi-platform manifest we need to reference the
+          #       individual components by digest.
+          AMD64_IMAGE_NAME="$IMAGE_REPO:amd64-$IMAGE_TAG"
+          ARM64_IMAGE_NAME="$IMAGE_REPO:arm64-$IMAGE_TAG"
+          echo "amd64_image_name=${IMAGE_REPO}@$(docker buildx imagetools inspect $AMD64_IMAGE_NAME --format '{{json .Manifest}}' | jq -r '.manifests[0].digest')" >> $GITHUB_OUTPUT
+          echo "arm64_image_name=${IMAGE_REPO}@$(docker buildx imagetools inspect $ARM64_IMAGE_NAME --format '{{json .Manifest}}' | jq -r '.manifests[0].digest')" >> $GITHUB_OUTPUT
+          echo "image_name=$IMAGE_REPO:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          PODMAN_AMD64_IMAGE_NAME="$IMAGE_REPO:podman-amd64-$IMAGE_TAG"
+          PODMAN_ARM64_IMAGE_NAME="$IMAGE_REPO:podman-arm64-$IMAGE_TAG"
+          echo "podman_amd64_image_name=${IMAGE_REPO}@$(docker buildx imagetools inspect $PODMAN_AMD64_IMAGE_NAME --format '{{json .Manifest}}' | jq -r '.manifests[0].digest')" >> $GITHUB_OUTPUT
+          echo "podman_arm64_image_name=${IMAGE_REPO}@$(docker buildx imagetools inspect $PODMAN_ARM64_IMAGE_NAME --format '{{json .Manifest}}' | jq -r '.manifests[0].digest')" >> $GITHUB_OUTPUT
+          echo "podman_image_name=$IMAGE_REPO:podman-$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Create and push manifest
+        run: |
+          # Docker Manifest
+          docker manifest create "${{ steps.vars.outputs.image_name }}" \
+            --amend "${{ steps.vars.outputs.amd64_image_name }}" \
+            --amend "${{ steps.vars.outputs.arm64_image_name }}"
+          docker manifest push "${{ steps.vars.outputs.image_name }}"
+          # Podman Manifest
+          docker manifest create "${{ steps.vars.outputs.podman_image_name }}" \
+            --amend "${{ steps.vars.outputs.podman_amd64_image_name }}" \
+            --amend "${{ steps.vars.outputs.podman_arm64_image_name }}"
+          docker manifest push "${{ steps.vars.outputs.podman_image_name }}"
+
+      # Belay: maintain stable floating tags so downstream consumers can pull
+      # :belay-main-latest instead of pinning a per-commit SHA. This is the
+      # backbone of the auto-rebuild loop with portage-cd's portage-updated
+      # repository_dispatch trigger.
+      - name: Tag as belay-main-latest
+        if: github.ref == 'refs/heads/belay_main'
+        run: |
+          IMAGE_REPO=ghcr.io/easy-up/portage-action
+          docker manifest create "$IMAGE_REPO:belay-main-latest" \
+            --amend "${{ steps.vars.outputs.amd64_image_name }}" \
+            --amend "${{ steps.vars.outputs.arm64_image_name }}"
+          docker manifest push "$IMAGE_REPO:belay-main-latest"
+          docker manifest create "$IMAGE_REPO:podman-belay-main-latest" \
+            --amend "${{ steps.vars.outputs.podman_amd64_image_name }}" \
+            --amend "${{ steps.vars.outputs.podman_arm64_image_name }}"
+          docker manifest push "$IMAGE_REPO:podman-belay-main-latest"
+
+      - name: job summary
+        shell: bash
+        run: |
+          echo "## Multi-arch manifest summary" >> $GITHUB_STEP_SUMMARY
+          echo ":white_check_mark: Manifest (Docker CLI): ${{ steps.vars.outputs.image_name }}" >> $GITHUB_STEP_SUMMARY
+          echo ":white_check_mark: Manifest (Podman CLI): ${{ steps.vars.outputs.podman_image_name }}" >> $GITHUB_STEP_SUMMARY
+          if [[ "${GITHUB_REF}" == "refs/heads/belay_main" ]]; then
+            echo ":label: Stable alias (Docker CLI): ghcr.io/easy-up/portage-action:belay-main-latest" >> $GITHUB_STEP_SUMMARY
+            echo ":label: Stable alias (Podman CLI): ghcr.io/easy-up/portage-action:podman-belay-main-latest" >> $GITHUB_STEP_SUMMARY
           fi

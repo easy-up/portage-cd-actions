@@ -17,43 +17,28 @@ su podman -s /bin/sh -c "git config --global --add safe.directory $GITHUB_WORKSP
 sed -i -e "s|^#\\? *rootless_storage_path *=.*$|rootless_storage_path=\"$GITHUB_WORKSPACE/.containers/storage\"|" /etc/containers/storage.conf
 
 if [ -f "$DOCKER_AUTH_JSON" ]; then
-  shout log "DOCKER_AUTH_JSON set, creating ~/.docker/config.json"
+  echo "[DEBUG] (portage-cd-action): DOCKER_AUTH_JSON set, creating ~/.docker/config.json"
   mkdir -p ~/.docker
   echo $DOCKER_AUTH_JSON | jq . > ~/.docker/config.json
 elif [ "$CONTAINER_REGISTRY" != "" ] && [ "$REGISTRY_USER" != "" ] && [ "$REGISTRY_TOKEN" != "" ]; then
-	shout log "Logging in to registry $CONTAINER_REGISTRY as $REGISTRY_USER"
-	su podman -s /bin/sh -c "echo \"$REGISTRY_TOKEN\" | podman login --compat-auth-file \"\$HOME/.docker/config.json\" \"$CONTAINER_REGISTRY\" -u \"$REGISTRY_USER\" --password-stdin"
+  echo "[DEBUG] (portage-cd-action): Logging in to registry $CONTAINER_REGISTRY as $REGISTRY_USER"
+  su podman -s /bin/sh -c "echo \"$REGISTRY_TOKEN\" | podman login --compat-auth-file \"\$HOME/.docker/config.json\" \"$CONTAINER_REGISTRY\" -u \"$REGISTRY_USER\" --password-stdin"
 else
-  shout log "Skipping docker config.json creation, neither DOCKER_AUTH_JSON or CONTAINER_REGISTRY/REGISTRY_USER/REGISTRY_TOKEN are set"
+  echo "[DEBUG] (portage-cd-action): Skipping docker config.json creation, neither DOCKER_AUTH_JSON or CONTAINER_REGISTRY/REGISTRY_USER/REGISTRY_TOKEN are set"
 fi
 
 if ([ "$PORTAGE_IMAGE_BUILD_ENABLED" = "0" ] || [ "$PORTAGE_IMAGE_BUILD_ENABLED" = "false" ]); then
   if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
-    shout log "Pull Image Scan target tag. Image Build not enabled, Image Scan enabled."
+    echo "[DEBUG] (portage-cd-action): Image Build not enabled, Image Scan enabled. Pulling Image Scan target tag."
     su podman -s /bin/sh -c "docker pull \"$PORTAGE_IMAGE_TAG\""
   fi
 fi
 
-# Ensure we're in the workspace directory
-cd "$GITHUB_WORKSPACE"
+if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
+  echo "[DEBUG] (portage-cd-action): Image Scan enabled. Updating grype db."
+  GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" su podman -s /bin/sh -c "grype db update"
+  # Allow all users to read the grype-db so that the github runner can read the cache.
+  chmod -R a+rX "$GITHUB_WORKSPACE/.cache/grype-db"
+fi
 
-# Debug current user and permissions after initial changes
-shout log "Current user and permissions after initial changes:"
-id
-ls -ld "$GITHUB_WORKSPACE"
-
-# Ensure workspace and artifacts directory have proper permissions
-shout log "Setting workspace permissions"
-mkdir -p "$GITHUB_WORKSPACE/artifacts"
-
-# Ensure artifacts directory exists and has proper permissions
-shout log "Setting artifacts directory permissions"
-chown -R podman:podman "$GITHUB_WORKSPACE/artifacts"
-chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
-
-# Debug final permissions
-shout log "Final permissions:"
-ls -ld "$GITHUB_WORKSPACE/artifacts"
-
-# Execute portage with arguments passed to the container
-su podman -s /bin/sh -c "portage $*"
+GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" su podman -s /bin/sh -c "portage run all --verbose --semgrep-experimental --cli-interface podman"

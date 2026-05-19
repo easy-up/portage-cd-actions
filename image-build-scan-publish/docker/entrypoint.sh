@@ -3,64 +3,42 @@
 # Exit on Non-zero for subsequent commands
 set -e
 
-shout log "Starting entrypoint script"
+if [ -f "$DOCKER_AUTH_JSON" ]; then
+  echo "[DEBUG] (portage-cd-action): DOCKER_AUTH_JSON set, creating ~/.docker/config.json"
+  mkdir -p ~/.docker
+  echo $DOCKER_AUTH_JSON | jq . > ~/.docker/config.json
+elif [ "$CONTAINER_REGISTRY" != "" ] && [ "$REGISTRY_USER" != "" ] && [ "$REGISTRY_TOKEN" != "" ]; then
+  echo "[DEBUG] (portage-cd-action): Logging in to registry $CONTAINER_REGISTRY as $REGISTRY_USER"
+  echo "$REGISTRY_TOKEN" | docker login "$CONTAINER_REGISTRY" -u "$REGISTRY_USER" --password-stdin
+else
+  echo "[DEBUG] (portage-cd-action): Skip docker config.json creation, DOCKER_AUTH_JSON not set"
+fi
 
-# Debug initial state
-shout log "Initial state:"
-id
-pwd
-ls -la
+if ([ "$PORTAGE_IMAGE_BUILD_ENABLED" = "0" ] || [ "$PORTAGE_IMAGE_BUILD_ENABLED" = "false" ]); then
+  if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
+    echo "[DEBUG] (portage-cd-action): Image Build not enabled, Image Scan enabled. Pulling Image Scan target tag."
+    docker pull "$PORTAGE_IMAGE_TAG"
+  fi
+fi
 
-# Set HOME and create necessary directories
-export HOME=/github/home
-mkdir -p "$GITHUB_WORKSPACE/artifacts"
-mkdir -p /github/home/.semgrep
+if ([ "$PORTAGE_IMAGE_SCAN_ENABLED" = "1" ] || [ "$PORTAGE_IMAGE_SCAN_ENABLED" = "true" ]); then
+  echo "[DEBUG] (portage-cd-action): Image Scan enabled. Updating grype db."
+  GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" grype db update
+  # Allow all users to read the grype-db so that the github runner can read the cache.
+  chmod -R a+rX "$GITHUB_WORKSPACE/.cache/grype-db"
+fi
 
-# Set permissions for portage user
-chown -R portage:portage /github/home/.semgrep
-chmod -R 777 /github/home/.semgrep
-chmod -R 777 "$GITHUB_WORKSPACE/artifacts"
+git config --global --add safe.directory $GITHUB_WORKSPACE
 
-# Force entire .git folder to match portage's UID/GID
-shout log "INFO: Enforcing .git directory ownership for portage user"
-chown -R portage:portage /github/workspace/.git
-chmod -R 755 /github/workspace/.git
-shout log "DEBUG: After adjusting .git directory ownership"
-ls -la /github/workspace/.git
+# In order for --cache-from and --cache-to to work with BuildKit, we need to use the docker-container driver.
+BUILDER_NAME=portage-buildkit-container
+BUILDER_INSTANCE="$(docker buildx ls --format json | jq -r '.Name' | grep $BUILDER_NAME || echo "")"
+if [ -z "$BUILDER_INSTANCE" ]; then
+  echo "[DEBUG] (portage-cd-action): Creating buildx builder instance $BUILDER_NAME"
+  docker buildx create --name $BUILDER_NAME --driver docker-container --driver-opt default-load=true --use --bootstrap
+else
+  echo "[DEBUG] (portage-cd-action): Using existing buildx builder instance of $BUILDER_NAME"
+  docker buildx use $BUILDER_NAME
+fi
 
-# If you need to trust /github/workspace + *:
-# -s /bin/sh is required: the portage user is created via `adduser -S` in the
-# upstream portage-cd Dockerfile, which sets the login shell to /sbin/nologin.
-# Without -s, busybox su refuses with "This account is not available".
-su -s /bin/sh portage -c "
-  git config --global --add safe.directory /github/workspace
-  git config --global --add safe.directory '*'
-  echo '=== DEBUG: Git config after adding safe.directory ==='
-  git config --list --show-origin
-"
-
-echo "=== DEBUG: Container user info ==="
-whoami
-id
-ls -lad /github/workspace
-ls -la /github/workspace/.git
-
-# Run portage command as portage user.
-# Use the username (not UID) and -s /bin/sh because the portage user has
-# /sbin/nologin as its login shell. The username is more robust than a
-# hardcoded UID, which has drifted across portage base-image rebuilds.
-exec su -s /bin/sh portage -c "
-    export HOME=/github/home
-    cd /github/workspace
-    portage \$*
-"
-
-sudo chown -R 1001:1001 $GITHUB_WORKSPACE
-sudo chmod -R 755 $GITHUB_WORKSPACE
-
-# Force .git directory to match user 1001:1001
-sudo chown -R 1001:1001 $GITHUB_WORKSPACE/.git
-sudo chmod -R 755 $GITHUB_WORKSPACE/.git
-
-# Optional: double-check .git/index
-ls -la $GITHUB_WORKSPACE/.git
+GRYPE_DB_CACHE_DIR="$GITHUB_WORKSPACE/.cache/grype-db" portage run all --verbose --semgrep-experimental --use-buildx

@@ -52,12 +52,11 @@ inputs:
     description: The target build stage to build (e.g., [linux/amd64])
 runs:
   using: docker
+  # belay_main: track the floating belay-main-latest tag rather than a pinned
+  # SHA, so the action rebuilds automatically when portage-cd publishes a new
+  # belay_main base image (via the repository_dispatch in delivery.yml).
   image: docker://ghcr.io/easy-up/portage-action:belay-main-latest
-  args:
-    - run
-    - all
-    - --verbose
-    - --semgrep-experimental
+  args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
     DOCKER_AUTH_JSON: ${{ inputs.docker_auth_json }}
