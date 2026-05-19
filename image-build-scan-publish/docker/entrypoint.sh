@@ -29,7 +29,10 @@ shout log "DEBUG: After adjusting .git directory ownership"
 ls -la /github/workspace/.git
 
 # If you need to trust /github/workspace + *:
-su portage -c "
+# -s /bin/sh is required: the portage user is created via `adduser -S` in the
+# upstream portage-cd Dockerfile, which sets the login shell to /sbin/nologin.
+# Without -s, busybox su refuses with "This account is not available".
+su -s /bin/sh portage -c "
   git config --global --add safe.directory /github/workspace
   git config --global --add safe.directory '*'
   echo '=== DEBUG: Git config after adding safe.directory ==='
@@ -42,8 +45,11 @@ id
 ls -lad /github/workspace
 ls -la /github/workspace/.git
 
-# Run portage command as portage user
-exec su -s /bin/sh 1001 -c "
+# Run portage command as portage user.
+# Use the username (not UID) and -s /bin/sh because the portage user has
+# /sbin/nologin as its login shell. The username is more robust than a
+# hardcoded UID, which has drifted across portage base-image rebuilds.
+exec su -s /bin/sh portage -c "
     export HOME=/github/home
     cd /github/workspace
     portage \$*
