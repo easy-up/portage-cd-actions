@@ -5,7 +5,6 @@ inputs:
     description: Comma seperated list of build time variables
   build_dir:
     description: The build directory to using during an image build
-    default: .
   build_group_id:
     description: The CI-generated identity shared by every image in one logical build
   build_image_names:
@@ -14,35 +13,28 @@ inputs:
     description: The full image tag for the target gatecheck bundle image blob
   code_scan_enabled:
     description: Enable/Disable the code scan pipeline
-    default: "1"
   config_file:
     description: The path to a config file to use when executing portage
-    default: .portage.yml
   container_registry:
     description: The container registry to login to (used if no DOCKER_AUTH_JSON is provided)
   coverage_file:
     description: An externally generated code coverage file to validate
   deploy_enabled:
     description: Enable/Disable the deploy pipeline
-    default: "1"
   docker_auth_json:
     description: The Docker config with credentials that will be used for ~/.docker/config.json (takes precedence over explicit registry credentials)
   dockerfile:
     description: The Dockerfile/Containerfile to use during an image build
-    default: Dockerfile
   gatecheck_config_filename:
     description: The filename for the gatecheck config
   image_build_enabled:
     description: Enable/Disable the image build pipeline
-    default: "1"
   image_name:
     description: The stable image name for this build job
   image_publish_enabled:
     description: Enable/Disable the image publish pipeline
-    default: "1"
   image_scan_enabled:
     description: Enable/Disable the image scan pipeline
-    default: "1"
   platform:
     description: The target platform for build (e.g., [linux/amd64])
   registry_token:
@@ -51,13 +43,10 @@ inputs:
     description: The username for the container registry (used if no DOCKER_AUTH_JSON is provided)
   semgrep_rules:
     description: Semgrep ruleset manual override
-    default: p/default
   semgrep_src_dir:
     description: The target directory for the semgrep scan
-    default: .
   tag:
     description: The full image tag for the target container image
-    default: my-app:latest
   target:
     description: The target build stage to build
 runs:

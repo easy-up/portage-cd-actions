@@ -165,26 +165,30 @@ Functionality to the underlying execution of Portage CD can be modified using Gi
 | Name                      | Type   | Default Value | Description                                                                    |
 |---------------------------| ------ |---------------|--------------------------------------------------------------------------------|
 | config_file               | String |               | The path to a config file to use when executing portage                        |
-| tag                       | String | my-app:latest | The full image tag for the target container image                              |
-| image_build_enabled       | Bool   | 1             | Enable/Disable the image build pipeline                                        |
-| build_dir                 | String | .             | The build directory to using during an image build                             |
-| dockerfile                | String | Dockerfile    | The Dockerfile/Containerfile to use during an image build                      |
+| tag                       | String |               | The full image tag for the target container image                              |
+| image_build_enabled       | Bool   |               | Enable/Disable the image build pipeline                                        |
+| build_dir                 | String |               | The build directory to using during an image build                             |
+| dockerfile                | String |               | The Dockerfile/Containerfile to use during an image build                      |
 | platform                  | String |               | The target platform for build (e.g., [linux/amd64])                            |
 | target                    | String |               | The target build stage to build                                                |
 | build_args                | List   |               | Comma seperated list of build time variables                                   |
 | build_group_id            | String |               | CI-generated identity shared by every image in one logical build               |
 | image_name                | String |               | Stable image name for this build job                                           |
 | build_image_names         | String |               | Comma-delimited image names without spaces or quoting, shared by every job     |
-| image_scan_enabled        | Bool   | 1             | Enable/Disable the image scan pipeline                                         |
-| code_scan_enabled         | Bool   | 1             | Enable/Disable the code scan pipeline                                          |
-| semgrep_rules             | String | p/default     | Semgrep ruleset manual override                                                |
-| semgrep_src_dir           | String | .             | The target directory for the semgrep scan                                      |
+| image_scan_enabled        | Bool   |               | Enable/Disable the image scan pipeline                                         |
+| code_scan_enabled         | Bool   |               | Enable/Disable the code scan pipeline                                          |
+| semgrep_rules             | String |               | Semgrep ruleset manual override                                                |
+| semgrep_src_dir           | String |               | The target directory for the semgrep scan                                      |
 | coverage_file             | String |               | An externally generated code coverage file to validate                         |
-| image_publish_enabled     | Bool   | 1             | Enable/Disable the image publish pipeline                                      |
+| image_publish_enabled     | Bool   |               | Enable/Disable the image publish pipeline                                      |
 | bundle_publish_tag        | String |               | The full image tag for the target gatecheck bundle image blob                  |
-| deploy_enabled            | Bool   | 1             | Enable/Disable the deploy pipeline                                             |
+| deploy_enabled            | Bool   |               | Enable/Disable the deploy pipeline                                             |
 | gatecheck_config_filename | String |               | The filename for the gatecheck config                                          |
 | docker_auth_json          | string |               | The Docker config with credentials that will be used for ~/.docker/config.json |
+
+### Regenerating Actions
+
+Run `just generate_docker_action generate_podman_action validate_action_mappings`. The recipes rebuild and invoke the sibling Portage checkout by default; set `PORTAGE_REPO` when the sibling checkout is elsewhere. Use `just verify_generated_actions` in CI to regenerate and fail when the checked-in action definitions are stale.
 
 ### Outputs
 
