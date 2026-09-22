@@ -5,6 +5,8 @@ Portage CD is an opinionated security pipeline designed to continuously deliver 
 ---
 
 - [Usage](#usage)
+  - [Multi-image GitHub Actions](#multi-image-github-actions)
+- [Portable Portage contract](#portable-portage-contract)
 - [Versioning](#versioning)
 - [Customizing](#customizing)
   - [inputs](#inputs)
@@ -57,6 +59,64 @@ jobs:
           config_file: ".portage.yml"
           gatecheck_config_filename: ".custom-gatecheck.yml"
 ```
+
+### Multi-image GitHub Actions
+
+This repository is a GitHub-specific wrapper around Portage. The action inputs map GitHub workflow values into Portage's portable environment-variable contract; the wrapper does not own logical-build identity or infer sibling images.
+
+For a matrix build, define the complete comma-delimited image-name list once and pass the same value and group ID to every matrix job. The list must contain no spaces or quoting. Only `image_name`, `tag`, and other image-specific settings vary:
+
+```yaml
+jobs:
+  images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: registry.example.com/team/api
+            dockerfile: services/api/Dockerfile
+          - name: registry.example.com/team/web
+            dockerfile: services/web/Dockerfile
+          - name: registry.example.com/team/worker
+            dockerfile: services/worker/Dockerfile
+          - name: registry.example.com/team/migrations
+            dockerfile: services/migrations/Dockerfile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: easy-up/portage-cd-actions/image-build-scan-publish/docker@belay_main
+        with:
+          build_group_id: github:${{ github.repository_id }}:${{ github.run_id }}:${{ github.run_attempt }}
+          build_image_names: registry.example.com/team/api,registry.example.com/team/web,registry.example.com/team/worker,registry.example.com/team/migrations
+          image_name: ${{ matrix.name }}
+          tag: ${{ matrix.name }}:${{ github.sha }}
+          dockerfile: ${{ matrix.dockerfile }}
+          bundle_publish_tag: ${{ matrix.name }}-bundle:${{ github.sha }}
+```
+
+`github.run_id` is shared by all jobs in the workflow run. `github.run_attempt` increments when the workflow is rerun, so rerunning all jobs creates a new logical attempt. Do not rerun failed jobs only when replacing a grouped build: successful sibling jobs would remain in the previous attempt and the replacement group would be incomplete.
+
+Grouped mode requires all three inputs together: `build_group_id`, `image_name`, and `build_image_names`. Supply all three to every image job, or omit all three to preserve legacy ungrouped behavior. Partial grouping context must not be used.
+
+## Portable Portage contract
+
+GitLab CI/CD, Jenkins, CircleCI, and other orchestrators should invoke Portage directly rather than use this GitHub Action. Set the underlying environment variables in every parallel image job:
+
+```shell
+PORTAGE_BUILD_GROUP_ID=ci:project-42:build-781
+PORTAGE_BUILD_IMAGE_NAMES=registry.example.com/team/api,registry.example.com/team/web,registry.example.com/team/worker,registry.example.com/team/migrations
+PORTAGE_IMAGE_NAME=registry.example.com/team/api
+```
+
+The CI orchestrator creates one opaque group ID per logical build. Every job gets that same ID and complete comma-delimited list; each job gets its own image name. Portage Actions, Portage, and Gatecheck transport these values without inference, and Belay consumes them.
+
+Portage splits `PORTAGE_BUILD_IMAGE_NAMES` literally on commas. It does not trim spaces or implement quoted-field syntax. Use `api,web,worker,migrations`; do not use `api, web, worker, migrations` or `"api,web,worker,migrations"`. Spaces and literal quote characters would become part of the parsed image names.
+
+For GitLab, use `gitlab:${CI_PROJECT_ID}:${CI_PIPELINE_ID}`. All jobs in a pipeline, including `parallel` and matrix jobs, share `CI_PIPELINE_ID`. Portage's [configuration guide](https://github.com/easy-up/portage-cd/blob/belay_main/docs/configuration.md#gitlab-cicd-identity) includes a four-image `parallel:matrix` example. A retried job keeps the same pipeline identity, so with Belay's current duplicate-artifact semantics it must not be used as a new grouped replacement. Start a new full pipeline to publish all images under a new ID. See GitLab's [predefined variables](https://docs.gitlab.com/ci/variables/predefined_variables/) and [job retry documentation](https://docs.gitlab.com/ci/jobs/#retry-jobs).
+
+For parent/child pipelines, construct the group ID in the root pipeline and pass it explicitly to child pipelines; do not substitute each child's pipeline ID. See GitLab's [downstream pipeline variable forwarding](https://docs.gitlab.com/ci/pipelines/downstream_pipelines/).
+
+Other providers can use `provider:project:logical-run`, as long as the value is new for a new full grouped attempt and identical across all image jobs. Never generate timestamps independently per job or use a per-job execution ID.
 ## Versioning
 
 Portage CD Action loosely conforms to Semantic Versioning guidelines and format.
@@ -112,6 +172,9 @@ Functionality to the underlying execution of Portage CD can be modified using Gi
 | platform                  | String |               | The target platform for build (e.g., [linux/amd64])                            |
 | target                    | String |               | The target build stage to build                                                |
 | build_args                | List   |               | Comma seperated list of build time variables                                   |
+| build_group_id            | String |               | CI-generated identity shared by every image in one logical build               |
+| image_name                | String |               | Stable image name for this build job                                           |
+| build_image_names         | String |               | Comma-delimited image names without spaces or quoting, shared by every job     |
 | image_scan_enabled        | Bool   | 1             | Enable/Disable the image scan pipeline                                         |
 | code_scan_enabled         | Bool   | 1             | Enable/Disable the code scan pipeline                                          |
 | semgrep_rules             | String | p/default     | Semgrep ruleset manual override                                                |
@@ -130,4 +193,3 @@ TODO: Add Content
 ## Troubleshooting
 
 TODO: Add Content
-

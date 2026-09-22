@@ -5,61 +5,74 @@ inputs:
     description: Comma seperated list of build time variables
   build_dir:
     description: The build directory to using during an image build
+    default: .
+  build_group_id:
+    description: The CI-generated identity shared by every image in one logical build
+  build_image_names:
+    description: Comma-separated CSV of the complete image-name set for the logical build
   bundle_publish_tag:
     description: The full image tag for the target gatecheck bundle image blob
   code_scan_enabled:
     description: Enable/Disable the code scan pipeline
-    default: "true"
+    default: "1"
   config_file:
     description: The path to a config file to use when executing portage
+    default: .portage.yml
   container_registry:
     description: The container registry to login to (used if no DOCKER_AUTH_JSON is provided)
   coverage_file:
     description: An externally generated code coverage file to validate
   deploy_enabled:
     description: Enable/Disable the deploy pipeline
+    default: "1"
   docker_auth_json:
     description: The Docker config with credentials that will be used for ~/.docker/config.json (takes precedence over explicit registry credentials)
   dockerfile:
     description: The Dockerfile/Containerfile to use during an image build
+    default: Dockerfile
   gatecheck_config_filename:
     description: The filename for the gatecheck config
-  image_build_enabled:
-    description: Enable/Disable the image build pipeline
-    default: "true"
   image_build_cache_from:
     description: A location to pull cached layers from
   image_build_cache_to:
     description: A location to push cached layers to
+  image_build_enabled:
+    description: Enable/Disable the image build pipeline
+    default: "1"
+  image_name:
+    description: The stable image name for this build job
   image_publish_enabled:
     description: Enable/Disable the image publish pipeline
+    default: "1"
   image_scan_enabled:
     description: Enable/Disable the image scan pipeline
-    default: "true"
+    default: "1"
   platform:
-    description: The target platform for build
+    description: The target platform for build (e.g., [linux/amd64])
   registry_token:
     description: The token or password for the container registry (used if no DOCKER_AUTH_JSON is provided)
   registry_user:
     description: The username for the container registry (used if no DOCKER_AUTH_JSON is provided)
   semgrep_rules:
     description: Semgrep ruleset manual override
+    default: p/default
   semgrep_src_dir:
     description: The target directory for the semgrep scan
+    default: .
   tag:
     description: The full image tag for the target container image
+    default: my-app:latest
   target:
-    description: The target build stage to build (e.g., [linux/amd64])
+    description: The target build stage to build
 runs:
   using: docker
-  # belay_main: track the floating belay-main-latest tag rather than a pinned
-  # SHA, so the action rebuilds automatically when portage-cd publishes a new
-  # belay_main base image (via the repository_dispatch in delivery.yml).
   image: docker://ghcr.io/easy-up/portage-action:belay-main-latest
   args: []
   env:
     CONTAINER_REGISTRY: ${{ inputs.container_registry }}
     DOCKER_AUTH_JSON: ${{ inputs.docker_auth_json }}
+    PORTAGE_BUILD_GROUP_ID: ${{ inputs.build_group_id }}
+    PORTAGE_BUILD_IMAGE_NAMES: ${{ inputs.build_image_names }}
     PORTAGE_CODE_SCAN_COVERAGE_FILE: ${{ inputs.coverage_file }}
     PORTAGE_CODE_SCAN_ENABLED: ${{ inputs.code_scan_enabled }}
     PORTAGE_CODE_SCAN_SEMGREP_RULES: ${{ inputs.semgrep_rules }}
@@ -68,13 +81,14 @@ runs:
     PORTAGE_DEPLOY_ENABLED: ${{ inputs.deploy_enabled }}
     PORTAGE_DEPLOY_GATECHECK_CONFIG_FILENAME: ${{ inputs.gatecheck_config_filename }}
     PORTAGE_IMAGE_BUILD_ARGS: ${{ inputs.build_args }}
+    PORTAGE_IMAGE_BUILD_CACHE_FROM: ${{ inputs.image_build_cache_from }}
+    PORTAGE_IMAGE_BUILD_CACHE_TO: ${{ inputs.image_build_cache_to }}
     PORTAGE_IMAGE_BUILD_DIR: ${{ inputs.build_dir }}
     PORTAGE_IMAGE_BUILD_DOCKERFILE: ${{ inputs.dockerfile }}
     PORTAGE_IMAGE_BUILD_ENABLED: ${{ inputs.image_build_enabled }}
-    PORTAGE_IMAGE_BUILD_CACHE_FROM: ${{ inputs.image_build_cache_from }}
-    PORTAGE_IMAGE_BUILD_CACHE_TO: ${{ inputs.image_build_cache_to }}
     PORTAGE_IMAGE_BUILD_PLATFORM: ${{ inputs.platform }}
     PORTAGE_IMAGE_BUILD_TARGET: ${{ inputs.target }}
+    PORTAGE_IMAGE_NAME: ${{ inputs.image_name }}
     PORTAGE_IMAGE_PUBLISH_BUNDLE_TAG: ${{ inputs.bundle_publish_tag }}
     PORTAGE_IMAGE_PUBLISH_ENABLED: ${{ inputs.image_publish_enabled }}
     PORTAGE_IMAGE_SCAN_ENABLED: ${{ inputs.image_scan_enabled }}
