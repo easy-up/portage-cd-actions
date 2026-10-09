@@ -3,6 +3,11 @@
 # Exit on Non-zero for subsequent commands
 set -e
 
+# This action redacts vulnerability IDs in CI logs by default. The redact_cve_ids input
+# is empty when not set, so default it here rather than as an input default, which would
+# override the repository's .portage.yml. Set redact_cve_ids: "false" to show IDs.
+export PORTAGE_REDACT_CVE_IDS="${PORTAGE_REDACT_CVE_IDS:-true}"
+
 if [ -f "$DOCKER_AUTH_JSON" ]; then
   echo "[DEBUG] (portage-cd-action): DOCKER_AUTH_JSON set, creating ~/.docker/config.json"
   mkdir -p ~/.docker

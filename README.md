@@ -185,6 +185,13 @@ Functionality to the underlying execution of Portage CD can be modified using Gi
 | deploy_enabled            | Bool   |               | Enable/Disable the deploy pipeline                                             |
 | gatecheck_config_filename | String |               | The filename for the gatecheck config                                          |
 | docker_auth_json          | string |               | The Docker config with credentials that will be used for ~/.docker/config.json |
+| redact_cve_ids            | Bool   | `true`        | Replace vulnerability IDs with `[redacted]` in CI logs (see below)             |
+
+### Vulnerability ID redaction
+
+This action runs Portage with `PORTAGE_REDACT_CVE_IDS=true` unless the workflow sets `redact_cve_ids: "false"`. Vulnerability IDs (CVE, GHSA and common advisory formats) are replaced with `[redacted]` in gatecheck logs, including the `--verbose` output this action always enables, and in the findings tables. Report files, the published gatecheck bundle and deploy webhook submissions keep the full data.
+
+The default is applied in the entrypoint rather than as an input default, so it is the action's default: a `redactCveIds` value in `.portage.yml` does not turn it off here; use the `redact_cve_ids` input.
 
 ### Regenerating Actions
 

@@ -37,6 +37,8 @@ inputs:
     description: Enable/Disable the image scan pipeline
   platform:
     description: The target platform for build (e.g., [linux/amd64])
+  redact_cve_ids:
+    description: Replace vulnerability IDs (CVE, GHSA, ...) with [redacted] in gatecheck logs and tables; report files are unchanged
   registry_token:
     description: The token or password for the container registry (used if no DOCKER_AUTH_JSON is provided)
   registry_user:
@@ -76,5 +78,6 @@ runs:
     PORTAGE_IMAGE_PUBLISH_ENABLED: ${{ inputs.image_publish_enabled }}
     PORTAGE_IMAGE_SCAN_ENABLED: ${{ inputs.image_scan_enabled }}
     PORTAGE_IMAGE_TAG: ${{ inputs.tag }}
+    PORTAGE_REDACT_CVE_IDS: ${{ inputs.redact_cve_ids }}
     REGISTRY_TOKEN: ${{ inputs.registry_token }}
     REGISTRY_USER: ${{ inputs.registry_user }}

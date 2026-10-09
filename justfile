@@ -28,6 +28,10 @@ generate_podman_action: build_portage
     --input "registry_token:REGISTRY_TOKEN::The token or password for the container registry (used if no DOCKER_AUTH_JSON is provided)" > image-build-scan-publish/podman/action.yml
 
 validate_action_mappings:
+  grep -Eq '^    PORTAGE_REDACT_CVE_IDS: .+inputs\.redact_cve_ids.+$' image-build-scan-publish/docker/action.yml
+  grep -Eq '^    PORTAGE_REDACT_CVE_IDS: .+inputs\.redact_cve_ids.+$' image-build-scan-publish/podman/action.yml
+  grep -Fqx 'export PORTAGE_REDACT_CVE_IDS="${PORTAGE_REDACT_CVE_IDS:-true}"' image-build-scan-publish/docker/entrypoint.sh
+  grep -Fqx 'export PORTAGE_REDACT_CVE_IDS="${PORTAGE_REDACT_CVE_IDS:-true}"' image-build-scan-publish/podman/entrypoint.sh
   @if grep -nH '^    default:' image-build-scan-publish/docker/action.yml image-build-scan-publish/podman/action.yml; then echo 'generated action inputs must not define defaults' >&2; exit 1; fi
   grep -Fqx '    description: Comma-separated CSV of the complete image-name set for the logical build' image-build-scan-publish/docker/action.yml
   grep -Eq '^    PORTAGE_BUILD_IMAGE_NAMES: .+inputs\.build_image_names.+$' image-build-scan-publish/docker/action.yml
